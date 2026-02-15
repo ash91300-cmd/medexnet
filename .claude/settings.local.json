@@ -6,9 +6,16 @@
       "Bash(git init)",
       "Bash(git add .)",
       "Bash(git commit -m \"$(cat <<''EOF''\nInitial commit: Next.js project setup\n\n- Set up Next.js 15 with App Router\n- Configure TypeScript\n- Add Tailwind CSS\n- Create basic layout and home page\n- Add ESLint configuration\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
-      "Bash(git config --global user.name \"안상현\")"
+      "Bash(git config --global user.name \"안상현\")",
+      "Bash(git remote add origin https://github.com/ash91300-cmd/medexnet.git)",
+      "Bash(git branch -M main)",
+      "Bash(git push -u origin main)"
     ],
     "deny": [],
     "ask": []
-  }
+  },
+  "enabledMcpjsonServers": [
+    "supabase"
+  ],
+  "enableAllProjectMcpServers": true
 }
