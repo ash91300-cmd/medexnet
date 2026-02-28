@@ -22,7 +22,15 @@ export default function Navbar() {
             <span className="text-xl font-bold text-gray-900">MedExNet</span>
           </Link>
 
-          <div className="relative">
+          <div className="flex items-center gap-4">
+            <Link
+              href="/register"
+              className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              약품등록
+            </Link>
+
+            <div className="relative">
             <button
               onClick={() => setShowMenu((prev) => !prev)}
               className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
@@ -41,6 +49,7 @@ export default function Navbar() {
                 }}
               />
             )}
+          </div>
           </div>
         </div>
       </header>

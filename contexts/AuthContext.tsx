@@ -35,11 +35,15 @@ const supabase = createBrowserClient(
 );
 
 async function fetchUserProfile(userId: string): Promise<UserProfile | null> {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("users")
     .select("role, verification_status, name")
     .eq("id", userId)
     .single();
+  if (error) {
+    console.error("프로필 조회 실패:", error.message, error.code);
+  }
+  console.log("fetchUserProfile 결과:", { userId, data, error });
   return data as UserProfile | null;
 }
 
@@ -49,19 +53,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchUserProfile(session.user.id).then(setProfile);
+        const p = await fetchUserProfile(session.user.id);
+        setProfile(p);
       }
       setLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      async (_event, session) => {
         setUser(session?.user ?? null);
         if (session?.user) {
-          fetchUserProfile(session.user.id).then(setProfile);
+          const p = await fetchUserProfile(session.user.id);
+          setProfile(p);
         } else {
           setProfile(null);
         }
