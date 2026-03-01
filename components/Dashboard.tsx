@@ -1,5 +1,6 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import Navbar from "./Navbar";
 import MedicineBoard from "./MedicineBoard";
@@ -53,6 +54,8 @@ const STATUS_CONFIG = {
 
 export default function Dashboard() {
   const { profile } = useAuth();
+  const searchParams = useSearchParams();
+  const searchQuery = searchParams.get("search") ?? "";
 
   const status = profile?.verification_status ?? "unverified";
   const config = STATUS_CONFIG[status];
@@ -81,8 +84,20 @@ export default function Dashboard() {
 
         {/* Trading Board */}
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">거래 게시판</h2>
-          <MedicineBoard />
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-gray-900">
+              {searchQuery ? `"${searchQuery}" 검색 결과` : "거래 게시판"}
+            </h2>
+            {searchQuery && (
+              <a
+                href="/"
+                className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                전체 보기
+              </a>
+            )}
+          </div>
+          <MedicineBoard searchQuery={searchQuery} />
         </div>
       </main>
     </div>
