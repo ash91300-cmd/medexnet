@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import Navbar from "./Navbar";
 import MedicineBoard from "./MedicineBoard";
@@ -57,8 +59,18 @@ export default function Dashboard() {
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get("search") ?? "";
 
+  const [openedFilter, setOpenedFilter] = useState("전체");
+  const [expiryFilter, setExpiryFilter] = useState("전체");
+
   const status = profile?.verification_status ?? "unverified";
   const config = STATUS_CONFIG[status];
+
+  const hasActiveFilter = openedFilter !== "전체" || expiryFilter !== "전체";
+
+  function resetFilters() {
+    setOpenedFilter("전체");
+    setExpiryFilter("전체");
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -82,6 +94,64 @@ export default function Dashboard() {
           </div>
         )}
 
+        {/* Filter Bar */}
+        <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-6">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+            {/* 상태 필터 */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-700 whitespace-nowrap">상태</span>
+              <div className="flex gap-1">
+                {["전체", "미개봉", "개봉"].map((opt) => (
+                  <button
+                    key={opt}
+                    onClick={() => setOpenedFilter(opt)}
+                    className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                      openedFilter === opt
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    }`}
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 유통기한 잔여 필터 */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-700 whitespace-nowrap">유통기한 잔여</span>
+              <div className="flex gap-1">
+                {["전체", "6개월 이상", "3~6개월", "3개월 미만"].map((opt) => (
+                  <button
+                    key={opt}
+                    onClick={() => setExpiryFilter(opt)}
+                    className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                      expiryFilter === opt
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    }`}
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 필터 초기화 */}
+            {hasActiveFilter && (
+              <button
+                onClick={resetFilters}
+                className="ml-auto px-3 py-1.5 text-sm text-gray-500 hover:text-gray-700 transition-colors flex items-center gap-1"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182M21.037 14.133v4.992" />
+                </svg>
+                필터 초기화
+              </button>
+            )}
+          </div>
+        </div>
+
         {/* Trading Board */}
         <div>
           <div className="flex items-center justify-between mb-6">
@@ -89,15 +159,19 @@ export default function Dashboard() {
               {searchQuery ? `"${searchQuery}" 검색 결과` : "거래 게시판"}
             </h2>
             {searchQuery && (
-              <a
+              <Link
                 href="/"
                 className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
               >
                 전체 보기
-              </a>
+              </Link>
             )}
           </div>
-          <MedicineBoard searchQuery={searchQuery} />
+          <MedicineBoard
+            searchQuery={searchQuery}
+            openedFilter={openedFilter}
+            expiryFilter={expiryFilter}
+          />
         </div>
       </main>
     </div>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback, Suspense } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { useAuth } from "@/contexts/AuthContext";
 import { createClient } from "@/lib/supabase/client";
 import Navbar from "@/components/Navbar";
@@ -614,10 +615,13 @@ function RegisterContent() {
 
                     {photo.preview ? (
                       <div className="relative w-full h-48 rounded-lg overflow-hidden bg-gray-100">
-                        <img
+                        <Image
                           src={photo.preview}
                           alt={photo.label}
-                          className="w-full h-full object-cover"
+                          fill
+                          sizes="(max-width: 768px) 100vw, 672px"
+                          className="object-cover"
+                          unoptimized
                         />
                       </div>
                     ) : (
