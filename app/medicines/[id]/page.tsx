@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { createBrowserClient } from "@supabase/ssr";
+import { supabase } from "@/lib/supabase";
 import Navbar from "@/components/Navbar";
 import {
   calculateDiscountRate,
@@ -13,11 +13,6 @@ import {
   formatPrice,
   getRemainingDays,
 } from "@/lib/discount";
-
-const supabase = createBrowserClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 
 interface DrugInfo {
   product_code: number;
