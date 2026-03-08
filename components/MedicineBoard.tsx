@@ -21,16 +21,19 @@ interface MedicineRow {
   image_urls: string[];
   status: string;
   created_at: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  drugs_Fe: DrugInfo | any;
+  drugs_Fe: DrugInfo | DrugInfo[] | null;
 }
 
 interface MedicineBoardProps {
   searchQuery?: string;
+  openedFilter?: string;
+  expiryFilter?: string;
 }
 
 export default function MedicineBoard({
   searchQuery = "",
+  openedFilter = "전체",
+  expiryFilter = "전체",
 }: MedicineBoardProps) {
   const [medicines, setMedicines] = useState<MedicineRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -117,7 +120,26 @@ export default function MedicineBoard({
     );
   }
 
-  if (medicines.length === 0) {
+  const filtered = medicines.filter((med) => {
+    if (openedFilter !== "전체" && med.is_opened !== openedFilter) return false;
+
+    if (expiryFilter !== "전체") {
+      const now = new Date();
+      const expiry = new Date(med.expiry_date);
+      const diffMonths =
+        (expiry.getFullYear() - now.getFullYear()) * 12 +
+        (expiry.getMonth() - now.getMonth());
+
+      if (expiryFilter === "6개월 이상" && diffMonths < 6) return false;
+      if (expiryFilter === "3~6개월" && (diffMonths < 3 || diffMonths >= 6))
+        return false;
+      if (expiryFilter === "3개월 미만" && diffMonths >= 3) return false;
+    }
+
+    return true;
+  });
+
+  if (filtered.length === 0) {
     return (
       <div className="text-center py-20 bg-white rounded-2xl border border-gray-100">
         <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -149,7 +171,7 @@ export default function MedicineBoard({
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {medicines.map((med) => (
+      {filtered.map((med) => (
         <MedicineCard key={med.id} medicine={med} />
       ))}
     </div>
@@ -157,7 +179,8 @@ export default function MedicineBoard({
 }
 
 function MedicineCard({ medicine }: { medicine: MedicineRow }) {
-  const drug: DrugInfo | null = medicine.drugs_Fe ?? null;
+  const raw = medicine.drugs_Fe;
+  const drug: DrugInfo | null = Array.isArray(raw) ? raw[0] ?? null : raw ?? null;
   const productName = drug?.product_name ?? "알 수 없는 약품";
   const companyName = drug?.company_name ?? "-";
   const maxPrice = drug?.max_price ?? "-";
