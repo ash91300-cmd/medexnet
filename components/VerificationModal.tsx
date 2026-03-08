@@ -2,15 +2,14 @@
 
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { createBrowserClient } from "@supabase/ssr";
+import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 
-const supabase = createBrowserClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
-
-export default function VerificationModal({ onClose }: { onClose: () => void }) {
+export default function VerificationModal({
+  onClose,
+}: {
+  onClose: () => void;
+}) {
   const { user, refreshProfile } = useAuth();
   const [pharmacyName, setPharmacyName] = useState("");
   const [pharmacistName, setPharmacistName] = useState("");
@@ -88,7 +87,9 @@ export default function VerificationModal({ onClose }: { onClose: () => void }) 
       await refreshProfile();
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "인증 요청에 실패했습니다.");
+      setError(
+        err instanceof Error ? err.message : "인증 요청에 실패했습니다.",
+      );
     } finally {
       setLoading(false);
     }
@@ -97,7 +98,10 @@ export default function VerificationModal({ onClose }: { onClose: () => void }) 
   const modalContent = (
     <div className="fixed inset-0 z-[100] flex items-center justify-center">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        onClick={onClose}
+      />
 
       {/* Modal */}
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
@@ -108,8 +112,18 @@ export default function VerificationModal({ onClose }: { onClose: () => void }) 
             onClick={onClose}
             className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
           >
-            <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            <svg
+              className="w-5 h-5 text-gray-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
@@ -118,7 +132,9 @@ export default function VerificationModal({ onClose }: { onClose: () => void }) 
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
           {/* Pharmacy Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">약국명</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              약국명
+            </label>
             <input
               type="text"
               value={pharmacyName}
@@ -131,7 +147,9 @@ export default function VerificationModal({ onClose }: { onClose: () => void }) 
 
           {/* Pharmacist Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">대표 약사명</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              대표 약사명
+            </label>
             <input
               type="text"
               value={pharmacistName}
@@ -144,7 +162,9 @@ export default function VerificationModal({ onClose }: { onClose: () => void }) 
 
           {/* Phone */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">연락처</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              연락처
+            </label>
             <input
               type="tel"
               value={phone}
@@ -157,7 +177,9 @@ export default function VerificationModal({ onClose }: { onClose: () => void }) 
 
           {/* License Image Upload */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">약사면허증</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              약사면허증
+            </label>
             <input
               ref={licenseInputRef}
               type="file"
@@ -171,11 +193,23 @@ export default function VerificationModal({ onClose }: { onClose: () => void }) 
               className="w-full flex items-center justify-center gap-2 px-4 py-4 border-2 border-dashed border-gray-200 rounded-xl text-sm text-gray-500 hover:border-blue-400 hover:text-blue-500 transition-colors"
             >
               {licenseFile ? (
-                <span className="text-gray-900 font-medium truncate">{licenseFile.name}</span>
+                <span className="text-gray-900 font-medium truncate">
+                  {licenseFile.name}
+                </span>
               ) : (
                 <>
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={1.5}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"
+                    />
                   </svg>
                   이미지를 선택해주세요
                 </>
@@ -185,7 +219,9 @@ export default function VerificationModal({ onClose }: { onClose: () => void }) 
 
           {/* Business Registration Upload */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">사업자등록증</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              사업자등록증
+            </label>
             <input
               ref={businessInputRef}
               type="file"
@@ -199,11 +235,23 @@ export default function VerificationModal({ onClose }: { onClose: () => void }) 
               className="w-full flex items-center justify-center gap-2 px-4 py-4 border-2 border-dashed border-gray-200 rounded-xl text-sm text-gray-500 hover:border-blue-400 hover:text-blue-500 transition-colors"
             >
               {businessFile ? (
-                <span className="text-gray-900 font-medium truncate">{businessFile.name}</span>
+                <span className="text-gray-900 font-medium truncate">
+                  {businessFile.name}
+                </span>
               ) : (
                 <>
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={1.5}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"
+                    />
                   </svg>
                   이미지를 선택해주세요
                 </>
@@ -212,7 +260,9 @@ export default function VerificationModal({ onClose }: { onClose: () => void }) 
           </div>
 
           {error && (
-            <p className="text-sm text-red-500 bg-red-50 px-4 py-2.5 rounded-lg">{error}</p>
+            <p className="text-sm text-red-500 bg-red-50 px-4 py-2.5 rounded-lg">
+              {error}
+            </p>
           )}
 
           <button
