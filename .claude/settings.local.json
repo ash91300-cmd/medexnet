@@ -13,7 +13,11 @@
       "Bash(curl -s -X POST \"https://otsrqyrvcgoejffgvwip.supabase.co/rest/v1/rpc\"  -H \"apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im90c3JxeXJ2Y2dvZWpmZmd2d2lwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExMjQ5MTMsImV4cCI6MjA4NjcwMDkxM30.EdIbdoczvzMZ6UYUIHBKrpLCWxLI4w-s_ZKtF-RjAWg\"  -H \"Content-Type: application/json\")",
       "Bash(curl:*)",
       "Bash(npm run build:*)",
-      "Bash(npx next build)"
+      "Bash(npx next build)",
+      "mcp__supabase__list_tables",
+      "mcp__supabase__apply_migration",
+      "mcp__supabase__get_advisors",
+      "Bash(npx next dev)"
     ],
     "deny": [],
     "ask": []

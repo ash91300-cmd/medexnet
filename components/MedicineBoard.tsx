@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
 interface DrugInfo {
@@ -204,7 +205,7 @@ function MedicineCard({ medicine }: { medicine: MedicineRow }) {
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg hover:border-gray-200 transition-all">
+    <Link href={`/medicines/${medicine.id}`} className="block bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg hover:border-gray-200 transition-all cursor-pointer">
       {/* 이미지 */}
       <div className="aspect-[4/3] bg-gray-50 relative overflow-hidden">
         {thumbnail ? (
@@ -282,6 +283,6 @@ function MedicineCard({ medicine }: { medicine: MedicineRow }) {
           </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }

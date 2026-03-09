@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/contexts/AuthContext";
 import Navbar from "@/components/Navbar";
 import {
   calculateDiscountRate,
@@ -13,6 +14,11 @@ import {
   formatPrice,
   getRemainingDays,
 } from "@/lib/discount";
+
+interface Toast {
+  message: string;
+  type: "success" | "error";
+}
 
 interface DrugInfo {
   product_code: number;
@@ -51,11 +57,117 @@ const CONDITION_COLOR: Record<string, string> = {
 export default function MedicineDetailPage() {
   const params = useParams();
   const id = params.id as string;
+  const router = useRouter();
+  const { user, profile, loading: authLoading } = useAuth();
 
   const [medicine, setMedicine] = useState<MedicineDetail | null>(null);
   const [pharmacyName, setPharmacyName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [cartQuantity, setCartQuantity] = useState(1);
+  const [addingToCart, setAddingToCart] = useState(false);
+  const [toast, setToast] = useState<Toast | null>(null);
+
+  // 미인증 사용자 리다이렉트
+  useEffect(() => {
+    if (!authLoading && user && profile?.verification_status !== "verified") {
+      router.replace("/");
+    }
+  }, [authLoading, user, profile, router]);
+
+  function showToast(message: string, type: "success" | "error") {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  }
+
+  async function handleAddToCart() {
+    if (!user) {
+      showToast("로그인이 필요합니다.", "error");
+      return;
+    }
+    if (!medicine) return;
+
+    // 본인이 등록한 약품 체크
+    if (medicine.seller_id === user.id) {
+      showToast("본인이 등록한 약품은 장바구니에 담을 수 없습니다.", "error");
+      return;
+    }
+
+    if (cartQuantity < 1) {
+      showToast("수량을 1개 이상 입력해주세요.", "error");
+      return;
+    }
+
+    setAddingToCart(true);
+
+    try {
+      // 이미 장바구니에 있는지 확인
+      const { data: existing, error: fetchError } = await supabase
+        .from("cart_items")
+        .select("id, quantity")
+        .eq("user_id", user.id)
+        .eq("medicine_id", medicine.id)
+        .maybeSingle();
+
+      if (fetchError) {
+        showToast("장바구니 확인 중 오류가 발생했습니다.", "error");
+        setAddingToCart(false);
+        return;
+      }
+
+      const newTotal = (existing?.quantity ?? 0) + cartQuantity;
+
+      // 등록된 수량 초과 체크
+      if (newTotal > medicine.quantity) {
+        showToast(
+          `등록된 수량(${medicine.quantity}개)을 초과할 수 없습니다.${
+            existing
+              ? ` 현재 장바구니에 ${existing.quantity}개가 있습니다.`
+              : ""
+          }`,
+          "error"
+        );
+        setAddingToCart(false);
+        return;
+      }
+
+      if (existing) {
+        // 이미 있으면 수량 증가
+        const { error: updateError } = await supabase
+          .from("cart_items")
+          .update({ quantity: newTotal })
+          .eq("id", existing.id);
+
+        if (updateError) {
+          showToast("장바구니 수량 업데이트에 실패했습니다.", "error");
+        } else {
+          showToast(
+            `장바구니에 ${cartQuantity}개 추가되었습니다. (총 ${newTotal}개)`,
+            "success"
+          );
+        }
+      } else {
+        // 새로 추가
+        const { error: insertError } = await supabase
+          .from("cart_items")
+          .insert({
+            user_id: user.id,
+            medicine_id: medicine.id,
+            quantity: cartQuantity,
+          });
+
+        if (insertError) {
+          showToast("장바구니에 담기를 실패했습니다.", "error");
+        } else {
+          showToast(`장바구니에 ${cartQuantity}개 담았습니다.`, "success");
+        }
+      }
+    } catch {
+      showToast("오류가 발생했습니다. 다시 시도해주세요.", "error");
+    } finally {
+      setAddingToCart(false);
+    }
+  }
 
   useEffect(() => {
     async function fetchMedicine() {
@@ -177,6 +289,50 @@ export default function MedicineDetailPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* 토스트 */}
+      {toast && (
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[100] animate-fade-in">
+          <div
+            className={`flex items-center gap-3 px-5 py-3 rounded-xl shadow-lg text-sm font-medium ${
+              toast.type === "success"
+                ? "bg-green-600 text-white"
+                : "bg-red-600 text-white"
+            }`}
+          >
+            {toast.type === "success" ? (
+              <svg
+                className="w-5 h-5 flex-shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M4.5 12.75l6 6 9-13.5"
+                />
+              </svg>
+            ) : (
+              <svg
+                className="w-5 h-5 flex-shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"
+                />
+              </svg>
+            )}
+            <span>{toast.message}</span>
+          </div>
+        </div>
+      )}
+
       <Navbar />
 
       <main className="max-w-4xl mx-auto px-6 py-10">
@@ -344,6 +500,69 @@ export default function MedicineDetailPage() {
                 {pharmacyName && (
                   <InfoRow label="등록 약국" value={pharmacyName} />
                 )}
+              </div>
+
+              {/* 수량 입력 + 장바구니 담기 */}
+              <div className="mt-6 flex items-center gap-3">
+                <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setCartQuantity((prev) => Math.max(1, prev - 1))
+                    }
+                    className="w-10 h-10 flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12h-15" />
+                    </svg>
+                  </button>
+                  <input
+                    type="number"
+                    min={1}
+                    max={medicine.quantity}
+                    value={cartQuantity}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value, 10);
+                      if (!isNaN(val) && val >= 1) {
+                        setCartQuantity(val);
+                      } else if (e.target.value === "") {
+                        setCartQuantity(1);
+                      }
+                    }}
+                    className="w-14 h-10 text-center text-sm font-medium text-gray-900 border-x border-gray-200 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setCartQuantity((prev) =>
+                        Math.min(medicine.quantity, prev + 1)
+                      )
+                    }
+                    className="w-10 h-10 flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+                  </button>
+                </div>
+                <span className="text-xs text-gray-400">
+                  / {medicine.quantity}개
+                </span>
+                <button
+                  type="button"
+                  onClick={handleAddToCart}
+                  disabled={addingToCart}
+                  className="flex-1 flex items-center justify-center gap-2 h-10 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white text-sm font-medium rounded-xl transition-colors"
+                >
+                  {addingToCart ? (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-5.98.286h11.356m-9.982 0h9.982m0 0a3 3 0 105.98.286M7.5 14.25H5.25m0 0L3.756 5.272M7.5 14.25l1.689-8.978m6.561 8.978a3 3 0 105.98.286m-5.98-.286H20.25m0 0l-1.244-8.978M12.75 5.272h7.5" />
+                    </svg>
+                  )}
+                  장바구니 담기
+                </button>
               </div>
             </div>
           </div>
