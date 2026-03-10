@@ -448,6 +448,7 @@ function CartContent() {
           </div>
           <button
             type="button"
+            onClick={() => router.push("/checkout")}
             className="w-full h-12 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-xl transition-colors text-base"
           >
             주문하기

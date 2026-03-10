@@ -14,6 +14,9 @@ export default function VerificationModal({
   const [pharmacyName, setPharmacyName] = useState("");
   const [pharmacistName, setPharmacistName] = useState("");
   const [phone, setPhone] = useState("");
+  const [zonecode, setZonecode] = useState("");
+  const [address, setAddress] = useState("");
+  const [detailAddress, setDetailAddress] = useState("");
   const [licenseFile, setLicenseFile] = useState<File | null>(null);
   const [businessFile, setBusinessFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
@@ -22,6 +25,21 @@ export default function VerificationModal({
 
   const licenseInputRef = useRef<HTMLInputElement>(null);
   const businessInputRef = useRef<HTMLInputElement>(null);
+  const detailAddressRef = useRef<HTMLInputElement>(null);
+
+  const handleSearchAddress = () => {
+    new (window as any).kakao.Postcode({
+      oncomplete: (data: any) => {
+        const fullAddress =
+          data.userSelectedType === "R" ? data.roadAddress : data.jibunAddress;
+        setZonecode(data.zonecode);
+        setAddress(fullAddress);
+        setDetailAddress("");
+        // 주소 선택 후 상세주소 입력란에 포커스
+        setTimeout(() => detailAddressRef.current?.focus(), 100);
+      },
+    }).open();
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -71,6 +89,9 @@ export default function VerificationModal({
           pharmacy_name: pharmacyName,
           pharmacist_name: pharmacistName,
           phone,
+          address: detailAddress
+            ? `(${zonecode}) ${address}, ${detailAddress}`
+            : `(${zonecode}) ${address}`,
           license_image_url: licenseUrl,
           business_image_url: businessUrl,
         });
@@ -171,6 +192,45 @@ export default function VerificationModal({
               onChange={(e) => setPhone(e.target.value)}
               placeholder="예: 010-1234-5678"
               required
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+
+          {/* Address */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              약국 주소
+            </label>
+            <div className="flex gap-2 mb-2">
+              <input
+                type="text"
+                value={zonecode}
+                readOnly
+                placeholder="우편번호"
+                className="w-28 px-4 py-3 bg-gray-100 border border-gray-200 rounded-xl text-sm text-gray-500 cursor-default"
+              />
+              <button
+                type="button"
+                onClick={handleSearchAddress}
+                className="px-4 py-3 bg-blue-500 text-white text-sm font-medium rounded-xl hover:bg-blue-600 transition-colors whitespace-nowrap"
+              >
+                주소 검색
+              </button>
+            </div>
+            <input
+              type="text"
+              value={address}
+              readOnly
+              placeholder="주소 검색 버튼을 클릭해주세요"
+              required
+              className="w-full px-4 py-3 bg-gray-100 border border-gray-200 rounded-xl text-sm text-gray-500 mb-2 cursor-default"
+            />
+            <input
+              ref={detailAddressRef}
+              type="text"
+              value={detailAddress}
+              onChange={(e) => setDetailAddress(e.target.value)}
+              placeholder="상세주소를 입력해주세요 (동/호수 등)"
               className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>

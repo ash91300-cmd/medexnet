@@ -14,6 +14,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" suppressHydrationWarning>
+      <head>
+        <script
+          src="//t1.kakaocdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"
+          async
+        />
+      </head>
       <body className="antialiased" suppressHydrationWarning>
         <Providers>{children}</Providers>
       </body>
