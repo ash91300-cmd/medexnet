@@ -74,6 +74,13 @@ export default function Navbar() {
             </Link>
 
             <Link
+              href="/mypage"
+              className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors hidden sm:block"
+            >
+              마이페이지
+            </Link>
+
+            <Link
               href="/cart"
               className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
               title="장바구니"
