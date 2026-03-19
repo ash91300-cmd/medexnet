@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import Navbar from "@/components/Navbar";
 import { formatPrice } from "@/lib/discount";
+import OrderStatusStepper from "@/components/OrderStatusStepper";
 
 interface DrugInfo {
   product_name: string;
@@ -30,17 +31,11 @@ interface Order {
   id: string;
   total_amount: number;
   status: string;
+  tracking_number: string | null;
+  courier: string | null;
   created_at: string;
   order_items: OrderItem[];
 }
-
-const STATUS_LABEL: Record<string, { text: string; color: string }> = {
-  pending: { text: "주문 접수", color: "bg-amber-100 text-amber-700" },
-  confirmed: { text: "주문 확인", color: "bg-blue-100 text-blue-700" },
-  shipping: { text: "배송 중", color: "bg-indigo-100 text-indigo-700" },
-  completed: { text: "배송 완료", color: "bg-emerald-100 text-emerald-700" },
-  cancelled: { text: "주문 취소", color: "bg-red-100 text-red-700" },
-};
 
 function getMedicine(item: OrderItem): MedicineInfo | null {
   return Array.isArray(item.medicines)
@@ -100,7 +95,7 @@ function OrdersContent() {
       const { data, error } = await supabase
         .from("orders")
         .select(
-          `id, total_amount, status, created_at,
+          `id, total_amount, status, tracking_number, courier, created_at,
            order_items(
              id, quantity, price_at_purchase,
              medicines(
@@ -196,33 +191,23 @@ function OrdersContent() {
         </h1>
 
         <div className="space-y-4">
-          {orders.map((order) => {
-            const statusInfo = STATUS_LABEL[order.status] ?? {
-              text: order.status,
-              color: "bg-gray-100 text-gray-700",
-            };
-
-            return (
+          {orders.map((order) => (
               <div
                 key={order.id}
                 className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
               >
                 {/* 주문 헤더 */}
                 <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm font-medium text-gray-900">
-                      {formatDate(order.created_at)}
-                    </span>
-                    <span
-                      className={`inline-flex px-2.5 py-1 text-xs font-medium rounded-full ${statusInfo.color}`}
-                    >
-                      {statusInfo.text}
-                    </span>
-                  </div>
+                  <span className="text-sm font-medium text-gray-900">
+                    {formatDate(order.created_at)}
+                  </span>
                   <span className="text-xs text-gray-400 font-mono">
                     {order.id.slice(0, 8)}
                   </span>
                 </div>
+
+                {/* 주문 상태 스텝바 */}
+                <OrderStatusStepper order={order} />
 
                 {/* 약품 목록 */}
                 <div className="divide-y divide-gray-50">
@@ -268,8 +253,7 @@ function OrdersContent() {
                   </span>
                 </div>
               </div>
-            );
-          })}
+          ))}
         </div>
       </main>
     </div>

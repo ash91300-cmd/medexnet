@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import Navbar from "@/components/Navbar";
 import { formatPrice } from "@/lib/discount";
+import OrderStatusStepper from "@/components/OrderStatusStepper";
 
 interface SaleItem {
   order_item_id: string;
@@ -16,15 +17,21 @@ interface SaleItem {
   sale_amount: number;
   buyer_pharmacy_name: string;
   order_status: string;
+  order_id: string;
+  tracking_number: string | null;
+  courier: string | null;
 }
 
-const STATUS_LABEL: Record<string, { text: string; color: string }> = {
-  pending: { text: "주문 접수", color: "bg-amber-100 text-amber-700" },
-  confirmed: { text: "주문 확인", color: "bg-blue-100 text-blue-700" },
-  shipping: { text: "배송 중", color: "bg-indigo-100 text-indigo-700" },
-  completed: { text: "배송 완료", color: "bg-emerald-100 text-emerald-700" },
-  cancelled: { text: "주문 취소", color: "bg-red-100 text-red-700" },
-};
+interface SaleOrder {
+  order_id: string;
+  sale_date: string;
+  order_status: string;
+  tracking_number: string | null;
+  courier: string | null;
+  buyer_pharmacy_name: string;
+  items: SaleItem[];
+  total_amount: number;
+}
 
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr);
@@ -33,6 +40,29 @@ function formatDate(dateStr: string): string {
     month: "long",
     day: "numeric",
   });
+}
+
+function groupByOrder(sales: SaleItem[]): SaleOrder[] {
+  const map = new Map<string, SaleOrder>();
+  for (const item of sales) {
+    let group = map.get(item.order_id);
+    if (!group) {
+      group = {
+        order_id: item.order_id,
+        sale_date: item.sale_date,
+        order_status: item.order_status,
+        tracking_number: item.tracking_number,
+        courier: item.courier,
+        buyer_pharmacy_name: item.buyer_pharmacy_name,
+        items: [],
+        total_amount: 0,
+      };
+      map.set(item.order_id, group);
+    }
+    group.items.push(item);
+    group.total_amount += Number(item.sale_amount);
+  }
+  return Array.from(map.values());
 }
 
 function SalesContent() {
@@ -126,6 +156,7 @@ function SalesContent() {
     );
   }
 
+  const orders = groupByOrder(sales);
   const totalSalesAmount = sales.reduce((sum, item) => sum + Number(item.sale_amount), 0);
 
   return (
@@ -138,7 +169,7 @@ function SalesContent() {
         <h1 className="text-2xl font-bold text-gray-900 mt-4 mb-6">
           판매 내역
           <span className="text-base font-normal text-gray-500 ml-2">
-            {sales.length}건
+            {orders.length}건
           </span>
         </h1>
 
@@ -148,64 +179,72 @@ function SalesContent() {
           <span className="text-xl font-bold text-gray-900">{formatPrice(totalSalesAmount)}원</span>
         </div>
 
-        {/* 판매 내역 테이블 */}
-        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-          {/* 헤더 */}
-          <div className="hidden sm:grid sm:grid-cols-[1fr_0.8fr_0.5fr_0.7fr_0.6fr] gap-4 px-5 py-3 bg-gray-50 border-b border-gray-100 text-xs font-medium text-gray-500">
-            <span>약품명</span>
-            <span>구매 약국</span>
-            <span className="text-center">수량</span>
-            <span className="text-right">판매 금액</span>
-            <span className="text-center">상태</span>
-          </div>
-
-          {/* 데이터 행 */}
-          <div className="divide-y divide-gray-100">
-            {sales.map((item) => {
-              const statusInfo = STATUS_LABEL[item.order_status] ?? {
-                text: item.order_status,
-                color: "bg-gray-100 text-gray-700",
-              };
-
-              return (
-                <div key={item.order_item_id} className="px-5 py-4">
-                  {/* 모바일 레이아웃 */}
-                  <div className="sm:hidden space-y-2">
-                    <div className="flex items-start justify-between">
-                      <p className="text-sm font-medium text-gray-900 flex-1 mr-2">{item.product_name}</p>
-                      <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full whitespace-nowrap ${statusInfo.color}`}>
-                        {statusInfo.text}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-xs text-gray-500">
-                      <span>{item.buyer_pharmacy_name}</span>
-                      <span>{formatDate(item.sale_date)}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-500">{item.quantity}개</span>
-                      <span className="text-sm font-semibold text-gray-900">{formatPrice(Number(item.sale_amount))}원</span>
-                    </div>
-                  </div>
-
-                  {/* 데스크탑 레이아웃 */}
-                  <div className="hidden sm:grid sm:grid-cols-[1fr_0.8fr_0.5fr_0.7fr_0.6fr] gap-4 items-center">
-                    <div>
-                      <p className="text-sm font-medium text-gray-900 truncate">{item.product_name}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">{formatDate(item.sale_date)}</p>
-                    </div>
-                    <span className="text-sm text-gray-700 truncate">{item.buyer_pharmacy_name}</span>
-                    <span className="text-sm text-gray-700 text-center">{item.quantity}개</span>
-                    <span className="text-sm font-semibold text-gray-900 text-right">{formatPrice(Number(item.sale_amount))}원</span>
-                    <div className="flex justify-center">
-                      <span className={`inline-flex px-2.5 py-1 text-xs font-medium rounded-full ${statusInfo.color}`}>
-                        {statusInfo.text}
-                      </span>
-                    </div>
-                  </div>
+        {/* 주문별 판매 내역 */}
+        <div className="space-y-4">
+          {orders.map((order) => (
+            <div
+              key={order.order_id}
+              className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
+            >
+              {/* 주문 헤더 */}
+              <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                  <span className="text-sm font-medium text-gray-900">
+                    {formatDate(order.sale_date)}
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    구매자: {order.buyer_pharmacy_name}
+                  </span>
                 </div>
-              );
-            })}
-          </div>
+                <span className="text-xs text-gray-400 font-mono">
+                  {order.order_id.slice(0, 8)}
+                </span>
+              </div>
+
+              {/* 배송 상태 스텝바 */}
+              <OrderStatusStepper
+                order={{
+                  status: order.order_status,
+                  tracking_number: order.tracking_number,
+                  courier: order.courier,
+                }}
+              />
+
+              {/* 약품 목록 */}
+              <div className="divide-y divide-gray-50">
+                {order.items.map((item) => (
+                  <div
+                    key={item.order_item_id}
+                    className="flex items-center justify-between px-5 py-3"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-gray-900 truncate">
+                        {item.product_name}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-4 flex-shrink-0 ml-4">
+                      <span className="text-xs text-gray-500">
+                        {item.quantity}개
+                      </span>
+                      <span className="text-sm font-medium text-gray-900 w-24 text-right">
+                        {formatPrice(Number(item.sale_amount))}원
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* 총 판매 금액 */}
+              <div className="flex items-center justify-between px-5 py-4 bg-gray-50 border-t border-gray-100">
+                <span className="text-sm font-medium text-gray-600">
+                  주문 금액
+                </span>
+                <span className="text-lg font-bold text-gray-900">
+                  {formatPrice(order.total_amount)}원
+                </span>
+              </div>
+            </div>
+          ))}
         </div>
       </main>
     </div>
