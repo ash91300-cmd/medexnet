@@ -43,7 +43,7 @@ const FILTER_TABS = [
 /* ───────── Helpers ───────── */
 
 function getSeller(s: Settlement): SellerInfo | null {
-  return Array.isArray(s.seller) ? s.seller[0] ?? null : s.seller ?? null;
+  return Array.isArray(s.seller) ? (s.seller[0] ?? null) : (s.seller ?? null);
 }
 
 function getPharmacyName(seller: SellerInfo | null): string {
@@ -94,7 +94,7 @@ export default function SettlementManagementPage() {
          seller:users!seller_id(
            name, email,
            verification_requests(pharmacy_name)
-         )`
+         )`,
       )
       .order("created_at", { ascending: false });
 
@@ -117,7 +117,7 @@ export default function SettlementManagementPage() {
            order_items(
              id, quantity, price_at_purchase,
              medicines(seller_id)
-           )`
+           )`,
         )
         .eq("status", "completed");
 
@@ -138,8 +138,8 @@ export default function SettlementManagementPage() {
       const existingKeys = new Set(
         (existingSettlements ?? []).map(
           (s: { seller_id: string; order_id: string }) =>
-            `${s.seller_id}_${s.order_id}`
-        )
+            `${s.seller_id}_${s.order_id}`,
+        ),
       );
 
       // 3. Group by (seller_id, order_id) and calculate amounts
@@ -163,7 +163,7 @@ export default function SettlementManagementPage() {
           const amount = item.price_at_purchase * item.quantity;
           sellerAmounts.set(
             sellerId,
-            (sellerAmounts.get(sellerId) ?? 0) + amount
+            (sellerAmounts.get(sellerId) ?? 0) + amount,
           );
         }
 
@@ -221,7 +221,7 @@ export default function SettlementManagementPage() {
         updated_at: new Date().toISOString(),
       };
       setSettlements((prev) =>
-        prev.map((s) => (s.id === settlement.id ? updated : s))
+        prev.map((s) => (s.id === settlement.id ? updated : s)),
       );
       setSelected(updated);
     } catch (err) {
@@ -343,7 +343,9 @@ export default function SettlementManagementPage() {
 
       {filtered.length === 0 ? (
         <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center">
-          <p className="text-sm text-gray-400">해당하는 정산 내역이 없습니다.</p>
+          <p className="text-sm text-gray-400">
+            해당하는 정산 내역이 없습니다.
+          </p>
         </div>
       ) : (
         <div className="flex gap-6">

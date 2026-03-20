@@ -58,7 +58,8 @@ export default function MedicineBoard({
             drugQuery = drugQuery.ilike("product_name", `%${searchQuery}%`);
           }
 
-          const { data: drugCodes, error: drugError } = await drugQuery.limit(100);
+          const { data: drugCodes, error: drugError } =
+            await drugQuery.limit(100);
           if (drugError) throw drugError;
 
           const codes = (drugCodes ?? []).map((d) => d.product_code);
@@ -181,7 +182,9 @@ export default function MedicineBoard({
 
 function MedicineCard({ medicine }: { medicine: MedicineRow }) {
   const raw = medicine.drugs_Fe;
-  const drug: DrugInfo | null = Array.isArray(raw) ? raw[0] ?? null : raw ?? null;
+  const drug: DrugInfo | null = Array.isArray(raw)
+    ? (raw[0] ?? null)
+    : (raw ?? null);
   const productName = drug?.product_name ?? "알 수 없는 약품";
   const companyName = drug?.company_name ?? "-";
   const maxPrice = drug?.max_price ?? "-";
@@ -205,7 +208,10 @@ function MedicineCard({ medicine }: { medicine: MedicineRow }) {
   };
 
   return (
-    <Link href={`/medicines/${medicine.id}`} className="block bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg hover:border-gray-200 transition-all cursor-pointer">
+    <Link
+      href={`/medicines/${medicine.id}`}
+      className="block bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg hover:border-gray-200 transition-all cursor-pointer"
+    >
       {/* 이미지 */}
       <div className="aspect-[4/3] bg-gray-50 relative overflow-hidden">
         {thumbnail ? (

@@ -53,14 +53,14 @@ interface DeliveryInfo {
 
 function getDrug(medicine: MedicineInfo): DrugInfo | null {
   return Array.isArray(medicine.drugs_Fe)
-    ? medicine.drugs_Fe[0] ?? null
-    : medicine.drugs_Fe ?? null;
+    ? (medicine.drugs_Fe[0] ?? null)
+    : (medicine.drugs_Fe ?? null);
 }
 
 function getMedicine(item: CartItem): MedicineInfo | null {
   return Array.isArray(item.medicines)
-    ? item.medicines[0] ?? null
-    : item.medicines ?? null;
+    ? (item.medicines[0] ?? null)
+    : (item.medicines ?? null);
 }
 
 export default function CheckoutPage() {
@@ -115,7 +115,7 @@ function CheckoutContent() {
       const { data: cartData, error: cartError } = await supabase
         .from("cart_items")
         .select(
-          `id, medicine_id, quantity, medicines(id, drug_id, quantity, expiry_date, is_opened, condition, image_urls, drugs_Fe(product_code, product_name, company_name, max_price, unit))`
+          `id, medicine_id, quantity, medicines(id, drug_id, quantity, expiry_date, is_opened, condition, image_urls, drugs_Fe(product_code, product_name, company_name, max_price, unit))`,
         )
         .eq("user_id", user!.id)
         .order("created_at", { ascending: false });
@@ -168,7 +168,7 @@ function CheckoutContent() {
       drug?.max_price ?? "0",
       medicine.expiry_date,
       medicine.is_opened,
-      medicine.condition
+      medicine.condition,
     );
   }
 
@@ -184,7 +184,10 @@ function CheckoutContent() {
     if (!user || submitting) return;
 
     if (!delivery.pharmacyName || !delivery.phone || !delivery.address) {
-      showToast("약사 인증 정보가 불완전합니다. 인증 정보를 확인해주세요.", "error");
+      showToast(
+        "약사 인증 정보가 불완전합니다. 인증 정보를 확인해주세요.",
+        "error",
+      );
       return;
     }
 
@@ -282,12 +285,32 @@ function CheckoutContent() {
             }`}
           >
             {toast.type === "success" ? (
-              <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+              <svg
+                className="w-5 h-5 flex-shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M4.5 12.75l6 6 9-13.5"
+                />
               </svg>
             ) : (
-              <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+              <svg
+                className="w-5 h-5 flex-shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"
+                />
               </svg>
             )}
             <span>{toast.message}</span>
@@ -321,7 +344,7 @@ function CheckoutContent() {
                 const discountRate = calculateDiscountRate(
                   medicine.expiry_date,
                   medicine.is_opened,
-                  medicine.condition
+                  medicine.condition,
                 );
                 const discountedPrice = getDiscountedPrice(item);
 
@@ -339,8 +362,18 @@ function CheckoutContent() {
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <svg className="w-5 h-5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" />
+                          <svg
+                            className="w-5 h-5 text-gray-300"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={1}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z"
+                            />
                           </svg>
                         </div>
                       )}
@@ -380,26 +413,44 @@ function CheckoutContent() {
           <section className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100">
               <h2 className="text-lg font-bold text-gray-900">배송 정보</h2>
-              <p className="text-xs text-gray-400 mt-1">약사 인증 시 등록한 정보로 자동 입력됩니다.</p>
+              <p className="text-xs text-gray-400 mt-1">
+                약사 인증 시 등록한 정보로 자동 입력됩니다.
+              </p>
             </div>
             <div className="p-6 space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="flex items-center gap-3 bg-gray-50 rounded-xl px-4 py-3">
-                  <span className="text-sm text-gray-500 flex-shrink-0 w-14">약국명</span>
-                  <span className="text-sm font-medium text-gray-900">{delivery.pharmacyName || "-"}</span>
+                  <span className="text-sm text-gray-500 flex-shrink-0 w-14">
+                    약국명
+                  </span>
+                  <span className="text-sm font-medium text-gray-900">
+                    {delivery.pharmacyName || "-"}
+                  </span>
                 </div>
                 <div className="flex items-center gap-3 bg-gray-50 rounded-xl px-4 py-3">
-                  <span className="text-sm text-gray-500 flex-shrink-0 w-14">수령인</span>
-                  <span className="text-sm font-medium text-gray-900">{delivery.pharmacistName || "-"}</span>
+                  <span className="text-sm text-gray-500 flex-shrink-0 w-14">
+                    수령인
+                  </span>
+                  <span className="text-sm font-medium text-gray-900">
+                    {delivery.pharmacistName || "-"}
+                  </span>
                 </div>
               </div>
               <div className="flex items-center gap-3 bg-gray-50 rounded-xl px-4 py-3">
-                <span className="text-sm text-gray-500 flex-shrink-0 w-14">연락처</span>
-                <span className="text-sm font-medium text-gray-900">{delivery.phone || "-"}</span>
+                <span className="text-sm text-gray-500 flex-shrink-0 w-14">
+                  연락처
+                </span>
+                <span className="text-sm font-medium text-gray-900">
+                  {delivery.phone || "-"}
+                </span>
               </div>
               <div className="flex items-center gap-3 bg-gray-50 rounded-xl px-4 py-3">
-                <span className="text-sm text-gray-500 flex-shrink-0 w-14">주소</span>
-                <span className="text-sm font-medium text-gray-900">{delivery.address || "-"}</span>
+                <span className="text-sm text-gray-500 flex-shrink-0 w-14">
+                  주소
+                </span>
+                <span className="text-sm font-medium text-gray-900">
+                  {delivery.address || "-"}
+                </span>
               </div>
             </div>
           </section>
@@ -416,8 +467,10 @@ function CheckoutContent() {
                       const medicine = getMedicine(item);
                       if (!medicine) return sum;
                       const drug = getDrug(medicine);
-                      return sum + parsePrice(drug?.max_price ?? "0") * item.quantity;
-                    }, 0)
+                      return (
+                        sum + parsePrice(drug?.max_price ?? "0") * item.quantity
+                      );
+                    }, 0),
                   )}
                   원
                 </span>
@@ -431,17 +484,21 @@ function CheckoutContent() {
                       const medicine = getMedicine(item);
                       if (!medicine) return sum;
                       const drug = getDrug(medicine);
-                      const original = parsePrice(drug?.max_price ?? "0") * item.quantity;
-                      const discounted = getDiscountedPrice(item) * item.quantity;
+                      const original =
+                        parsePrice(drug?.max_price ?? "0") * item.quantity;
+                      const discounted =
+                        getDiscountedPrice(item) * item.quantity;
                       return sum + (original - discounted);
-                    }, 0)
+                    }, 0),
                   )}
                   원
                 </span>
               </div>
               <div className="border-t border-gray-100 pt-3 mt-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-base font-bold text-gray-900">총 결제 금액</span>
+                  <span className="text-base font-bold text-gray-900">
+                    총 결제 금액
+                  </span>
                   <span className="text-2xl font-bold text-blue-600">
                     {formatPrice(getTotalPrice())}원
                   </span>

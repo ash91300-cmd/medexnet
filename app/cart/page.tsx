@@ -47,14 +47,14 @@ interface Toast {
 
 function getDrug(medicine: MedicineInfo): DrugInfo | null {
   return Array.isArray(medicine.drugs_Fe)
-    ? medicine.drugs_Fe[0] ?? null
-    : medicine.drugs_Fe ?? null;
+    ? (medicine.drugs_Fe[0] ?? null)
+    : (medicine.drugs_Fe ?? null);
 }
 
 function getMedicine(item: CartItem): MedicineInfo | null {
   return Array.isArray(item.medicines)
-    ? item.medicines[0] ?? null
-    : item.medicines ?? null;
+    ? (item.medicines[0] ?? null)
+    : (item.medicines ?? null);
 }
 
 export default function CartPage() {
@@ -102,7 +102,7 @@ function CartContent() {
     const { data, error } = await supabase
       .from("cart_items")
       .select(
-        `id, medicine_id, quantity, medicines(id, drug_id, quantity, expiry_date, is_opened, condition, image_urls, drugs_Fe(product_code, product_name, company_name, max_price, unit))`
+        `id, medicine_id, quantity, medicines(id, drug_id, quantity, expiry_date, is_opened, condition, image_urls, drugs_Fe(product_code, product_name, company_name, max_price, unit))`,
       )
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
@@ -141,7 +141,9 @@ function CartContent() {
       showToast("수량 변경에 실패했습니다.", "error");
     } else {
       setCartItems((prev) =>
-        prev.map((ci) => (ci.id === item.id ? { ...ci, quantity: clamped } : ci))
+        prev.map((ci) =>
+          ci.id === item.id ? { ...ci, quantity: clamped } : ci,
+        ),
       );
     }
 
@@ -200,7 +202,7 @@ function CartContent() {
         drug?.max_price ?? "0",
         medicine.expiry_date,
         medicine.is_opened,
-        medicine.condition
+        medicine.condition,
       );
       return sum + discounted * item.quantity;
     }, 0);
@@ -226,13 +228,30 @@ function CartContent() {
         <main className="max-w-4xl mx-auto px-6 py-10">
           <div className="text-center py-20 bg-white rounded-2xl border border-gray-100">
             <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+              <svg
+                className="w-8 h-8 text-gray-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={1.5}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
+                />
               </svg>
             </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">로그인이 필요합니다</h2>
-            <p className="text-sm text-gray-500 mb-6">장바구니를 이용하려면 로그인해주세요.</p>
-            <Link href="/auth" className="text-blue-500 hover:text-blue-600 font-medium text-sm">
+            <h2 className="text-xl font-bold text-gray-900 mb-2">
+              로그인이 필요합니다
+            </h2>
+            <p className="text-sm text-gray-500 mb-6">
+              장바구니를 이용하려면 로그인해주세요.
+            </p>
+            <Link
+              href="/auth"
+              className="text-blue-500 hover:text-blue-600 font-medium text-sm"
+            >
               로그인하기
             </Link>
           </div>
@@ -250,12 +269,26 @@ function CartContent() {
           <h1 className="text-2xl font-bold text-gray-900 mb-6">장바구니</h1>
           <div className="text-center py-20 bg-white rounded-2xl border border-gray-100">
             <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-5.98.286h11.356m-9.982 0h9.982m0 0a3 3 0 105.98.286M7.5 14.25H5.25m0 0L3.756 5.272M7.5 14.25l1.689-8.978m6.561 8.978a3 3 0 105.98.286m-5.98-.286H20.25m0 0l-1.244-8.978M12.75 5.272h7.5" />
+              <svg
+                className="w-8 h-8 text-gray-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={1.5}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-5.98.286h11.356m-9.982 0h9.982m0 0a3 3 0 105.98.286M7.5 14.25H5.25m0 0L3.756 5.272M7.5 14.25l1.689-8.978m6.561 8.978a3 3 0 105.98.286m-5.98-.286H20.25m0 0l-1.244-8.978M12.75 5.272h7.5"
+                />
               </svg>
             </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">장바구니가 비어있습니다</h2>
-            <p className="text-sm text-gray-500 mb-6">약품 게시판에서 필요한 약품을 담아보세요.</p>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">
+              장바구니가 비어있습니다
+            </h2>
+            <p className="text-sm text-gray-500 mb-6">
+              약품 게시판에서 필요한 약품을 담아보세요.
+            </p>
             <Link
               href="/"
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-xl transition-colors"
@@ -282,12 +315,32 @@ function CartContent() {
             }`}
           >
             {toast.type === "success" ? (
-              <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+              <svg
+                className="w-5 h-5 flex-shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M4.5 12.75l6 6 9-13.5"
+                />
               </svg>
             ) : (
-              <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+              <svg
+                className="w-5 h-5 flex-shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"
+                />
               </svg>
             )}
             <span>{toast.message}</span>
@@ -324,13 +377,13 @@ function CartContent() {
             const discountRate = calculateDiscountRate(
               medicine.expiry_date,
               medicine.is_opened,
-              medicine.condition
+              medicine.condition,
             );
             const discountedPrice = calculateDiscountedPrice(
               drug?.max_price ?? "0",
               medicine.expiry_date,
               medicine.is_opened,
-              medicine.condition
+              medicine.condition,
             );
             const isUpdating = updatingIds.has(item.id);
 
@@ -354,8 +407,18 @@ function CartContent() {
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <svg className="w-6 h-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" />
+                      <svg
+                        className="w-6 h-6 text-gray-300"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={1}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z"
+                        />
                       </svg>
                     </div>
                   )}
@@ -386,12 +449,24 @@ function CartContent() {
                 <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden flex-shrink-0">
                   <button
                     type="button"
-                    onClick={() => handleQuantityChange(item, item.quantity - 1)}
+                    onClick={() =>
+                      handleQuantityChange(item, item.quantity - 1)
+                    }
                     disabled={item.quantity <= 1}
                     className="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 disabled:text-gray-300 disabled:hover:bg-transparent transition-colors"
                   >
-                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12h-15" />
+                    <svg
+                      className="w-3 h-3"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M19.5 12h-15"
+                      />
                     </svg>
                   </button>
                   <input
@@ -407,12 +482,24 @@ function CartContent() {
                   />
                   <button
                     type="button"
-                    onClick={() => handleQuantityChange(item, item.quantity + 1)}
+                    onClick={() =>
+                      handleQuantityChange(item, item.quantity + 1)
+                    }
                     disabled={item.quantity >= medicine.quantity}
                     className="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 disabled:text-gray-300 disabled:hover:bg-transparent transition-colors"
                   >
-                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    <svg
+                      className="w-3 h-3"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 4.5v15m7.5-7.5h-15"
+                      />
                     </svg>
                   </button>
                 </div>
@@ -429,8 +516,18 @@ function CartContent() {
                   className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors flex-shrink-0"
                   title="삭제"
                 >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   </svg>
                 </button>
               </div>

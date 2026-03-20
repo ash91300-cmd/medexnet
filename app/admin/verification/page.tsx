@@ -18,10 +18,7 @@ interface VerificationRequest {
   created_at: string;
 }
 
-const STATUS_CONFIG: Record<
-  string,
-  { label: string; color: string }
-> = {
+const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   pending: { label: "대기중", color: "bg-amber-100 text-amber-700" },
   approved: { label: "승인", color: "bg-emerald-100 text-emerald-700" },
   rejected: { label: "거절", color: "bg-red-100 text-red-700" },
@@ -103,14 +100,24 @@ export default function VerificationManagementPage() {
       setRequests((prev) =>
         prev.map((r) =>
           r.id === request.id
-            ? { ...r, status: "approved" as const, reviewed_at: new Date().toISOString(), rejected_reason: null }
-            : r
-        )
+            ? {
+                ...r,
+                status: "approved" as const,
+                reviewed_at: new Date().toISOString(),
+                rejected_reason: null,
+              }
+            : r,
+        ),
       );
       setSelected((prev) =>
         prev?.id === request.id
-          ? { ...prev, status: "approved" as const, reviewed_at: new Date().toISOString(), rejected_reason: null }
-          : prev
+          ? {
+              ...prev,
+              status: "approved" as const,
+              reviewed_at: new Date().toISOString(),
+              rejected_reason: null,
+            }
+          : prev,
       );
     } catch (err) {
       console.error("승인 처리 실패:", err);
@@ -154,8 +161,8 @@ export default function VerificationManagementPage() {
                 reviewed_at: new Date().toISOString(),
                 rejected_reason: rejectedReason.trim(),
               }
-            : r
-        )
+            : r,
+        ),
       );
       setSelected((prev) =>
         prev?.id === request.id
@@ -165,7 +172,7 @@ export default function VerificationManagementPage() {
               reviewed_at: new Date().toISOString(),
               rejected_reason: rejectedReason.trim(),
             }
-          : prev
+          : prev,
       );
       setRejectedReason("");
     } catch (err) {
@@ -177,9 +184,7 @@ export default function VerificationManagementPage() {
   }
 
   const filtered =
-    filter === "all"
-      ? requests
-      : requests.filter((r) => r.status === filter);
+    filter === "all" ? requests : requests.filter((r) => r.status === filter);
 
   const counts = {
     all: requests.length,
@@ -225,10 +230,14 @@ export default function VerificationManagementPage() {
 
       <div className="flex gap-6">
         {/* 목록 */}
-        <div className={`${selected ? "w-1/2 hidden lg:block" : "w-full"} space-y-3`}>
+        <div
+          className={`${selected ? "w-1/2 hidden lg:block" : "w-full"} space-y-3`}
+        >
           {filtered.length === 0 ? (
             <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center">
-              <p className="text-sm text-gray-400">해당하는 인증 요청이 없습니다.</p>
+              <p className="text-sm text-gray-400">
+                해당하는 인증 요청이 없습니다.
+              </p>
             </div>
           ) : (
             filtered.map((req) => {
@@ -282,8 +291,18 @@ export default function VerificationManagementPage() {
                   onClick={() => setSelected(null)}
                   className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-400"
                 >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   </svg>
                 </button>
               </div>
@@ -309,25 +328,36 @@ export default function VerificationManagementPage() {
                   <InfoRow label="약사명" value={selected.pharmacist_name} />
                   <InfoRow label="연락처" value={selected.phone} />
                   <InfoRow label="주소" value={selected.address ?? "-"} />
-                  <InfoRow label="신청일" value={formatDateTime(selected.created_at)} />
+                  <InfoRow
+                    label="신청일"
+                    value={formatDateTime(selected.created_at)}
+                  />
                 </div>
 
                 {/* 거절 사유 (거절 상태일 때) */}
                 {selected.status === "rejected" && selected.rejected_reason && (
                   <div className="px-4 py-3 bg-red-50 rounded-xl border border-red-100">
-                    <p className="text-xs font-medium text-red-600 mb-1">거절 사유</p>
-                    <p className="text-sm text-red-700">{selected.rejected_reason}</p>
+                    <p className="text-xs font-medium text-red-600 mb-1">
+                      거절 사유
+                    </p>
+                    <p className="text-sm text-red-700">
+                      {selected.rejected_reason}
+                    </p>
                   </div>
                 )}
 
                 {/* 서류 이미지 */}
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-900 mb-3">제출 서류</h3>
+                  <h3 className="text-sm font-semibold text-gray-900 mb-3">
+                    제출 서류
+                  </h3>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <p className="text-xs text-gray-500 mb-1.5">약사면허증</p>
                       <button
-                        onClick={() => setImageModal(selected.license_image_url)}
+                        onClick={() =>
+                          setImageModal(selected.license_image_url)
+                        }
                         className="w-full aspect-[4/3] bg-gray-50 rounded-xl border border-gray-200 overflow-hidden hover:border-blue-300 transition-colors group"
                       >
                         <img
@@ -338,9 +368,13 @@ export default function VerificationManagementPage() {
                       </button>
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500 mb-1.5">사업자등록증</p>
+                      <p className="text-xs text-gray-500 mb-1.5">
+                        사업자등록증
+                      </p>
                       <button
-                        onClick={() => setImageModal(selected.business_image_url)}
+                        onClick={() =>
+                          setImageModal(selected.business_image_url)
+                        }
                         className="w-full aspect-[4/3] bg-gray-50 rounded-xl border border-gray-200 overflow-hidden hover:border-blue-300 transition-colors group"
                       >
                         <img
@@ -400,8 +434,18 @@ export default function VerificationManagementPage() {
               className="absolute -top-10 right-0 text-white/80 hover:text-white text-sm flex items-center gap-1"
             >
               닫기
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
             <img
@@ -420,7 +464,9 @@ export default function VerificationManagementPage() {
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-start gap-3">
-      <span className="text-xs text-gray-400 w-14 flex-shrink-0 pt-0.5">{label}</span>
+      <span className="text-xs text-gray-400 w-14 flex-shrink-0 pt-0.5">
+        {label}
+      </span>
       <span className="text-sm text-gray-900">{value}</span>
     </div>
   );

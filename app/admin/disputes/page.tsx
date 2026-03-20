@@ -30,9 +30,18 @@ interface Dispute {
 /* ───────── Constants ───────── */
 
 const TYPE_CONFIG: Record<string, { label: string; color: string }> = {
-  condition_mismatch: { label: "상태 불일치", color: "bg-orange-100 text-orange-700" },
-  quantity_shortage: { label: "수량 부족", color: "bg-purple-100 text-purple-700" },
-  shipping_issue: { label: "배송 문제", color: "bg-indigo-100 text-indigo-700" },
+  condition_mismatch: {
+    label: "상태 불일치",
+    color: "bg-orange-100 text-orange-700",
+  },
+  quantity_shortage: {
+    label: "수량 부족",
+    color: "bg-purple-100 text-purple-700",
+  },
+  shipping_issue: {
+    label: "배송 문제",
+    color: "bg-indigo-100 text-indigo-700",
+  },
   other: { label: "기타", color: "bg-gray-100 text-gray-700" },
 };
 
@@ -67,8 +76,8 @@ const NEXT_STATUS_LABEL: Record<string, string> = {
 
 function getReporter(dispute: Dispute): ReporterInfo | null {
   return Array.isArray(dispute.reporter)
-    ? dispute.reporter[0] ?? null
-    : dispute.reporter ?? null;
+    ? (dispute.reporter[0] ?? null)
+    : (dispute.reporter ?? null);
 }
 
 function getPharmacyName(reporter: ReporterInfo | null): string {
@@ -118,7 +127,7 @@ export default function DisputeManagementPage() {
          reporter:users!reporter_id(
            name, email,
            verification_requests(pharmacy_name)
-         )`
+         )`,
       )
       .order("created_at", { ascending: false });
 
@@ -145,7 +154,9 @@ export default function DisputeManagementPage() {
         status: newStatus,
         updated_at: new Date().toISOString(),
       };
-      setDisputes((prev) => prev.map((d) => (d.id === dispute.id ? updated : d)));
+      setDisputes((prev) =>
+        prev.map((d) => (d.id === dispute.id ? updated : d)),
+      );
       setSelected(updated);
     } catch (err) {
       console.error("상태 변경 실패:", err);
@@ -297,17 +308,34 @@ export default function DisputeManagementPage() {
                   <div className="flex items-center gap-2 flex-wrap">
                     <span
                       className={`inline-flex px-3 py-1.5 text-xs font-semibold rounded-full ${
-                        (STATUS_CONFIG[selected.status] ?? { color: "bg-gray-100 text-gray-700" }).color
+                        (
+                          STATUS_CONFIG[selected.status] ?? {
+                            color: "bg-gray-100 text-gray-700",
+                          }
+                        ).color
                       }`}
                     >
-                      {(STATUS_CONFIG[selected.status] ?? { label: selected.status }).label}
+                      {
+                        (
+                          STATUS_CONFIG[selected.status] ?? {
+                            label: selected.status,
+                          }
+                        ).label
+                      }
                     </span>
                     <span
                       className={`inline-flex px-3 py-1.5 text-xs font-semibold rounded-full ${
-                        (TYPE_CONFIG[selected.type] ?? { color: "bg-gray-100 text-gray-700" }).color
+                        (
+                          TYPE_CONFIG[selected.type] ?? {
+                            color: "bg-gray-100 text-gray-700",
+                          }
+                        ).color
                       }`}
                     >
-                      {(TYPE_CONFIG[selected.type] ?? { label: selected.type }).label}
+                      {
+                        (TYPE_CONFIG[selected.type] ?? { label: selected.type })
+                          .label
+                      }
                     </span>
                     {selected.updated_at && (
                       <span className="text-xs text-gray-400">
@@ -330,7 +358,8 @@ export default function DisputeManagementPage() {
                     <InfoRow
                       label="분쟁유형"
                       value={
-                        (TYPE_CONFIG[selected.type] ?? { label: selected.type }).label
+                        (TYPE_CONFIG[selected.type] ?? { label: selected.type })
+                          .label
                       }
                     />
                     <InfoRow
@@ -366,7 +395,7 @@ export default function DisputeManagementPage() {
                         onClick={() =>
                           handleStatusChange(
                             selected,
-                            NEXT_STATUS[selected.status]
+                            NEXT_STATUS[selected.status],
                           )
                         }
                         disabled={processing}
@@ -407,15 +436,18 @@ function DisputeStatusStepper({ status }: { status: string }) {
         const isCurrent = idx === currentIdx;
 
         return (
-          <div key={step.key} className="flex items-center flex-1 last:flex-none">
+          <div
+            key={step.key}
+            className="flex items-center flex-1 last:flex-none"
+          >
             <div className="flex flex-col items-center gap-1.5">
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
                   isCompleted
                     ? "bg-emerald-500 text-white"
                     : isCurrent
-                    ? "bg-blue-500 text-white ring-4 ring-blue-100"
-                    : "bg-gray-200 text-gray-400"
+                      ? "bg-blue-500 text-white ring-4 ring-blue-100"
+                      : "bg-gray-200 text-gray-400"
                 }`}
               >
                 {isCompleted ? (
@@ -441,8 +473,8 @@ function DisputeStatusStepper({ status }: { status: string }) {
                   isCompleted
                     ? "text-emerald-600"
                     : isCurrent
-                    ? "text-blue-600"
-                    : "text-gray-400"
+                      ? "text-blue-600"
+                      : "text-gray-400"
                 }`}
               >
                 {step.label}
