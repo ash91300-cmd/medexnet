@@ -125,7 +125,7 @@ export default function MedicineDetailPage() {
               ? ` 현재 장바구니에 ${existing.quantity}개가 있습니다.`
               : ""
           }`,
-          "error"
+          "error",
         );
         setAddingToCart(false);
         return;
@@ -143,7 +143,7 @@ export default function MedicineDetailPage() {
         } else {
           showToast(
             `장바구니에 ${cartQuantity}개 추가되었습니다. (총 ${newTotal}개)`,
-            "success"
+            "success",
           );
         }
       } else {
@@ -176,7 +176,7 @@ export default function MedicineDetailPage() {
       const { data, error } = await supabase
         .from("medicines")
         .select(
-          `id, drug_id, seller_id, quantity, expiry_date, is_opened, condition, image_urls, status, created_at, drugs_Fe(product_code, product_name, company_name, max_price, unit)`
+          `id, drug_id, seller_id, quantity, expiry_date, is_opened, condition, image_urls, status, created_at, drugs_Fe(product_code, product_name, company_name, max_price, unit)`,
         )
         .eq("id", id)
         .single();
@@ -266,25 +266,27 @@ export default function MedicineDetailPage() {
   }
 
   /* ── 데이터 계산 ── */
-  const drug: DrugInfo | null = Array.isArray(medicine.drugs_Fe) ? medicine.drugs_Fe[0] ?? null : medicine.drugs_Fe ?? null;
+  const drug: DrugInfo | null = Array.isArray(medicine.drugs_Fe)
+    ? (medicine.drugs_Fe[0] ?? null)
+    : (medicine.drugs_Fe ?? null);
   const maxPrice = parsePrice(drug?.max_price ?? "0");
   const discountRate = calculateDiscountRate(
     medicine.expiry_date,
     medicine.is_opened,
-    medicine.condition
+    medicine.condition,
   );
   const discountedPrice = calculateDiscountedPrice(
     drug?.max_price ?? "0",
     medicine.expiry_date,
     medicine.is_opened,
-    medicine.condition
+    medicine.condition,
   );
   const remainingDays = getRemainingDays(medicine.expiry_date);
   const isExpired = remainingDays <= 0;
 
   const expiryDate = new Date(medicine.expiry_date);
   const formattedExpiry = `${expiryDate.getFullYear()}.${String(
-    expiryDate.getMonth() + 1
+    expiryDate.getMonth() + 1,
   ).padStart(2, "0")}.${String(expiryDate.getDate()).padStart(2, "0")}`;
 
   return (
@@ -490,9 +492,7 @@ export default function MedicineDetailPage() {
                       }
                     >
                       {formattedExpiry}
-                      {isExpired
-                        ? " (만료)"
-                        : ` (${remainingDays}일 남음)`}
+                      {isExpired ? " (만료)" : ` (${remainingDays}일 남음)`}
                     </span>
                   }
                 />
@@ -512,8 +512,18 @@ export default function MedicineDetailPage() {
                     }
                     className="w-10 h-10 flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors"
                   >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12h-15" />
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M19.5 12h-15"
+                      />
                     </svg>
                   </button>
                   <input
@@ -535,13 +545,23 @@ export default function MedicineDetailPage() {
                     type="button"
                     onClick={() =>
                       setCartQuantity((prev) =>
-                        Math.min(medicine.quantity, prev + 1)
+                        Math.min(medicine.quantity, prev + 1),
                       )
                     }
                     className="w-10 h-10 flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors"
                   >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 4.5v15m7.5-7.5h-15"
+                      />
                     </svg>
                   </button>
                 </div>
@@ -557,8 +577,18 @@ export default function MedicineDetailPage() {
                   {addingToCart ? (
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   ) : (
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-5.98.286h11.356m-9.982 0h9.982m0 0a3 3 0 105.98.286M7.5 14.25H5.25m0 0L3.756 5.272M7.5 14.25l1.689-8.978m6.561 8.978a3 3 0 105.98.286m-5.98-.286H20.25m0 0l-1.244-8.978M12.75 5.272h7.5" />
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-5.98.286h11.356m-9.982 0h9.982m0 0a3 3 0 105.98.286M7.5 14.25H5.25m0 0L3.756 5.272M7.5 14.25l1.689-8.978m6.561 8.978a3 3 0 105.98.286m-5.98-.286H20.25m0 0l-1.244-8.978M12.75 5.272h7.5"
+                      />
                     </svg>
                   )}
                   장바구니 담기
@@ -572,13 +602,7 @@ export default function MedicineDetailPage() {
   );
 }
 
-function InfoRow({
-  label,
-  value,
-}: {
-  label: string;
-  value: React.ReactNode;
-}) {
+function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex justify-between py-3 border-b border-gray-100 last:border-0">
       <span className="text-gray-500">{label}</span>

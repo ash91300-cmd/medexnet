@@ -83,20 +83,20 @@ const NEXT_STATUS_LABEL: Record<string, string> = {
 
 function getMedicine(item: OrderItem): MedicineInfo | null {
   return Array.isArray(item.medicines)
-    ? item.medicines[0] ?? null
-    : item.medicines ?? null;
+    ? (item.medicines[0] ?? null)
+    : (item.medicines ?? null);
 }
 
 function getDrug(medicine: MedicineInfo): DrugInfo | null {
   return Array.isArray(medicine.drugs_Fe)
-    ? medicine.drugs_Fe[0] ?? null
-    : medicine.drugs_Fe ?? null;
+    ? (medicine.drugs_Fe[0] ?? null)
+    : (medicine.drugs_Fe ?? null);
 }
 
 function getBuyer(order: Order): BuyerInfo | null {
   return Array.isArray(order.buyer)
-    ? order.buyer[0] ?? null
-    : order.buyer ?? null;
+    ? (order.buyer[0] ?? null)
+    : (order.buyer ?? null);
 }
 
 function getPharmacyName(buyer: BuyerInfo | null): string {
@@ -159,7 +159,7 @@ export default function OrderManagementPage() {
              id, drug_id,
              drugs_Fe(product_name, company_name)
            )
-         )`
+         )`,
       )
       .order("created_at", { ascending: false });
 
@@ -187,7 +187,11 @@ export default function OrderManagementPage() {
 
       if (error) throw error;
 
-      const updated = { ...order, status: newStatus, updated_at: new Date().toISOString() };
+      const updated = {
+        ...order,
+        status: newStatus,
+        updated_at: new Date().toISOString(),
+      };
       setOrders((prev) => prev.map((o) => (o.id === order.id ? updated : o)));
       setSelected(updated);
     } catch (err) {
@@ -248,7 +252,11 @@ export default function OrderManagementPage() {
 
       if (error) throw error;
 
-      const updated = { ...order, status: "cancelled", updated_at: new Date().toISOString() };
+      const updated = {
+        ...order,
+        status: "cancelled",
+        updated_at: new Date().toISOString(),
+      };
       setOrders((prev) => prev.map((o) => (o.id === order.id ? updated : o)));
       setSelected(updated);
     } catch (err) {
@@ -408,7 +416,13 @@ export default function OrderManagementPage() {
                         ).color
                       }`}
                     >
-                      {(STATUS_CONFIG[selected.status] ?? { label: selected.status }).label}
+                      {
+                        (
+                          STATUS_CONFIG[selected.status] ?? {
+                            label: selected.status,
+                          }
+                        ).label
+                      }
                     </span>
                     {selected.updated_at && (
                       <span className="text-xs text-gray-400">
@@ -419,7 +433,11 @@ export default function OrderManagementPage() {
 
                   {/* Order Info */}
                   <div className="space-y-3">
-                    <InfoRow label="주문번호" value={selected.id.slice(0, 8)} mono />
+                    <InfoRow
+                      label="주문번호"
+                      value={selected.id.slice(0, 8)}
+                      mono
+                    />
                     <InfoRow
                       label="약국명"
                       value={getPharmacyName(getBuyer(selected))}
@@ -453,7 +471,10 @@ export default function OrderManagementPage() {
                           mono
                         />
                         {selected.shipping_memo && (
-                          <InfoRow label="메모" value={selected.shipping_memo} />
+                          <InfoRow
+                            label="메모"
+                            value={selected.shipping_memo}
+                          />
                         )}
                       </div>
                     </div>
@@ -489,7 +510,7 @@ export default function OrderManagementPage() {
                               </span>
                               <span className="text-sm font-medium text-gray-900 w-20 text-right">
                                 {formatPrice(
-                                  item.price_at_purchase * item.quantity
+                                  item.price_at_purchase * item.quantity,
                                 )}
                                 원
                               </span>
@@ -532,7 +553,8 @@ export default function OrderManagementPage() {
                       </div>
                       <div>
                         <label className="text-xs text-gray-600 mb-1 block">
-                          배송 메모 <span className="text-gray-400">(선택)</span>
+                          배송 메모{" "}
+                          <span className="text-gray-400">(선택)</span>
                         </label>
                         <textarea
                           value={shippingMemo}
@@ -570,7 +592,7 @@ export default function OrderManagementPage() {
                             onClick={() =>
                               handleStatusChange(
                                 selected,
-                                NEXT_STATUS[selected.status]
+                                NEXT_STATUS[selected.status],
                               )
                             }
                             disabled={processing}
@@ -618,9 +640,7 @@ function InfoRow({
       <span className="text-xs text-gray-400 w-16 flex-shrink-0 pt-0.5">
         {label}
       </span>
-      <span
-        className={`text-sm text-gray-900 ${mono ? "font-mono" : ""}`}
-      >
+      <span className={`text-sm text-gray-900 ${mono ? "font-mono" : ""}`}>
         {value}
       </span>
     </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import LandingPage from "@/components/LandingPage";
 import Dashboard from "@/components/Dashboard";
@@ -11,7 +11,8 @@ function HomeContent() {
   const { user, profile, loading } = useAuth();
   const [showModal, setShowModal] = useState(false);
 
-  if (loading) {
+  // 초기 로딩 또는 로그인은 됐는데 프로필 아직 로드 중
+  if (loading || (user && !profile)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
@@ -19,21 +20,36 @@ function HomeContent() {
     );
   }
 
+  // 비로그인 → 랜딩페이지
+  if (!user) {
+    return <LandingPage />;
+  }
+
   // 로그인 + 인증 완료 → 대시보드
-  if (user && profile?.verification_status === "verified") {
+  if (profile?.verification_status === "verified") {
     return <Dashboard />;
   }
 
-  // 로그인 + 미인증 → 인증 안내 화면
+  // 로그인 + 미인증/심사중/반려 → 인증 안내 화면
   if (user) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen">
         <Navbar />
         <main className="max-w-2xl mx-auto px-6 py-16">
           <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center">
             <div className="w-16 h-16 bg-orange-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <svg className="w-8 h-8 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+              <svg
+                className="w-8 h-8 text-orange-500"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={1.5}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"
+                />
               </svg>
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-3">
@@ -80,18 +96,10 @@ function HomeContent() {
     );
   }
 
-  // 비로그인 → 랜딩페이지
+  // fallback
   return <LandingPage />;
 }
 
 export default function Home() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-      </div>
-    }>
-      <HomeContent />
-    </Suspense>
-  );
+  return <HomeContent />;
 }

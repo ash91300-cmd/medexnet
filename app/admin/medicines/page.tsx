@@ -69,7 +69,9 @@ const CONDITION_COLOR: Record<string, string> = {
 
 /* ── 헬퍼 ── */
 function getDrug(m: MedicineRow): DrugInfo | null {
-  return Array.isArray(m.drugs_Fe) ? m.drugs_Fe[0] ?? null : m.drugs_Fe ?? null;
+  return Array.isArray(m.drugs_Fe)
+    ? (m.drugs_Fe[0] ?? null)
+    : (m.drugs_Fe ?? null);
 }
 
 function formatDate(iso: string) {
@@ -82,10 +84,14 @@ function formatDate(iso: string) {
    ══════════════════════════════════════════ */
 export default function MedicineInspectionPage() {
   const [medicines, setMedicines] = useState<MedicineRow[]>([]);
-  const [pharmacyNames, setPharmacyNames] = useState<Record<string, string>>({});
+  const [pharmacyNames, setPharmacyNames] = useState<Record<string, string>>(
+    {},
+  );
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>("all");
-  const [selectedMedicine, setSelectedMedicine] = useState<MedicineRow | null>(null);
+  const [selectedMedicine, setSelectedMedicine] = useState<MedicineRow | null>(
+    null,
+  );
   const [selectedImage, setSelectedImage] = useState(0);
   const [updating, setUpdating] = useState(false);
   const [toast, setToast] = useState<Toast | null>(null);
@@ -102,7 +108,7 @@ export default function MedicineInspectionPage() {
     const { data, error } = await supabase
       .from("medicines")
       .select(
-        `id, drug_id, seller_id, quantity, expiry_date, is_opened, condition, image_urls, status, created_at, drugs_Fe(product_code, product_name, company_name, max_price, unit)`
+        `id, drug_id, seller_id, quantity, expiry_date, is_opened, condition, image_urls, status, created_at, drugs_Fe(product_code, product_name, company_name, max_price, unit)`,
       )
       .order("created_at", { ascending: false });
 
@@ -142,7 +148,10 @@ export default function MedicineInspectionPage() {
   }, [fetchMedicines]);
 
   /* ── 상태 변경 ── */
-  async function handleStatusChange(id: string, newStatus: "approved" | "rejected") {
+  async function handleStatusChange(
+    id: string,
+    newStatus: "approved" | "rejected",
+  ) {
     setUpdating(true);
 
     const { error } = await supabase
@@ -158,15 +167,19 @@ export default function MedicineInspectionPage() {
 
     // 로컬 상태 즉시 반영
     setMedicines((prev) =>
-      prev.map((m) => (m.id === id ? { ...m, status: newStatus } : m))
+      prev.map((m) => (m.id === id ? { ...m, status: newStatus } : m)),
     );
     if (selectedMedicine?.id === id) {
-      setSelectedMedicine((prev) => (prev ? { ...prev, status: newStatus } : null));
+      setSelectedMedicine((prev) =>
+        prev ? { ...prev, status: newStatus } : null,
+      );
     }
 
     showToast(
-      newStatus === "approved" ? "약품이 승인되었습니다." : "약품이 거절되었습니다.",
-      "success"
+      newStatus === "approved"
+        ? "약품이 승인되었습니다."
+        : "약품이 거절되었습니다.",
+      "success",
     );
     setUpdating(false);
   }
@@ -196,12 +209,32 @@ export default function MedicineInspectionPage() {
             }`}
           >
             {toast.type === "success" ? (
-              <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+              <svg
+                className="w-5 h-5 flex-shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M4.5 12.75l6 6 9-13.5"
+                />
               </svg>
             ) : (
-              <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+              <svg
+                className="w-5 h-5 flex-shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"
+                />
               </svg>
             )}
             <span>{toast.message}</span>
@@ -248,8 +281,18 @@ export default function MedicineInspectionPage() {
         /* 빈 상태 */
         <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center">
           <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <svg className="w-7 h-7 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23.693L5 14.5m14.8.8l1.402 1.402c1.232 1.232 1.232 3.23 0 4.462l-.017.017c-1.232 1.232-3.23 1.232-4.462 0L15.32 19.78M5 14.5l-1.402 1.402c-1.232 1.232-1.232 3.23 0 4.462l.017.017c1.232 1.232 3.23 1.232 4.462 0L9.48 19.078" />
+            <svg
+              className="w-7 h-7 text-gray-300"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={1.5}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23.693L5 14.5m14.8.8l1.402 1.402c1.232 1.232 1.232 3.23 0 4.462l-.017.017c-1.232 1.232-3.23 1.232-4.462 0L15.32 19.78M5 14.5l-1.402 1.402c-1.232 1.232-1.232 3.23 0 4.462l.017.017c1.232 1.232 3.23 1.232 4.462 0L9.48 19.078"
+              />
             </svg>
           </div>
           <p className="text-sm text-gray-400">해당하는 약품이 없습니다.</p>
@@ -308,8 +351,18 @@ export default function MedicineInspectionPage() {
                               />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center">
-                                <svg className="w-5 h-5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" />
+                                <svg
+                                  className="w-5 h-5 text-gray-300"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                  strokeWidth={1.5}
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z"
+                                  />
                                 </svg>
                               </div>
                             )}
@@ -365,8 +418,12 @@ export default function MedicineInspectionPage() {
               selectedImage={selectedImage}
               onSelectImage={setSelectedImage}
               updating={updating}
-              onApprove={() => handleStatusChange(selectedMedicine.id, "approved")}
-              onReject={() => handleStatusChange(selectedMedicine.id, "rejected")}
+              onApprove={() =>
+                handleStatusChange(selectedMedicine.id, "approved")
+              }
+              onReject={() =>
+                handleStatusChange(selectedMedicine.id, "rejected")
+              }
               onClose={() => setSelectedMedicine(null)}
             />
           </div>
@@ -413,8 +470,18 @@ function DetailModal({
           onClick={onClose}
           className="p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
         >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
       </div>
@@ -433,8 +500,18 @@ function DetailModal({
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
-                <svg className="w-16 h-16 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" />
+                <svg
+                  className="w-16 h-16 text-gray-300"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={1}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z"
+                  />
                 </svg>
               </div>
             )}
@@ -470,7 +547,9 @@ function DetailModal({
         <div className="p-6 md:border-l border-t md:border-t-0 border-gray-100">
           {/* 상태 배지 */}
           <div className="flex items-center gap-2 mb-3">
-            <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${badge.className}`}>
+            <span
+              className={`text-xs font-medium px-2.5 py-1 rounded-full ${badge.className}`}
+            >
               {badge.label}
             </span>
             <span
@@ -484,7 +563,8 @@ function DetailModal({
             </span>
             <span
               className={`text-xs font-medium px-2.5 py-1 rounded-full ${
-                CONDITION_COLOR[medicine.condition] ?? "bg-gray-100 text-gray-600"
+                CONDITION_COLOR[medicine.condition] ??
+                "bg-gray-100 text-gray-600"
               }`}
             >
               {CONDITION_LABEL[medicine.condition] ?? medicine.condition}
@@ -495,15 +575,31 @@ function DetailModal({
           <h3 className="text-xl font-bold text-gray-900 mb-1">
             {drug?.product_name ?? "알 수 없는 약품"}
           </h3>
-          <p className="text-sm text-gray-500 mb-5">{drug?.company_name ?? "-"}</p>
+          <p className="text-sm text-gray-500 mb-5">
+            {drug?.company_name ?? "-"}
+          </p>
 
           {/* 상세 정보 */}
           <div className="space-y-0 text-sm">
-            <InfoRow label="보험코드" value={String(drug?.product_code ?? "-")} />
+            <InfoRow
+              label="보험코드"
+              value={String(drug?.product_code ?? "-")}
+            />
             <InfoRow label="제조사" value={drug?.company_name ?? "-"} />
-            <InfoRow label="상한가" value={drug?.max_price ? `${drug.max_price} / ${drug.unit ?? ""}` : "-"} />
-            <InfoRow label="수량" value={`${medicine.quantity.toLocaleString("ko-KR")}개`} />
-            <InfoRow label="유통기한" value={formatDate(medicine.expiry_date)} />
+            <InfoRow
+              label="상한가"
+              value={
+                drug?.max_price ? `${drug.max_price} / ${drug.unit ?? ""}` : "-"
+              }
+            />
+            <InfoRow
+              label="수량"
+              value={`${medicine.quantity.toLocaleString("ko-KR")}개`}
+            />
+            <InfoRow
+              label="유통기한"
+              value={formatDate(medicine.expiry_date)}
+            />
             <InfoRow label="개봉 여부" value={medicine.is_opened} />
             <InfoRow
               label="상태"
@@ -527,8 +623,18 @@ function DetailModal({
               {updating ? (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
               ) : (
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M4.5 12.75l6 6 9-13.5"
+                  />
                 </svg>
               )}
               {medicine.status === "approved" ? "승인됨" : "승인"}
@@ -545,8 +651,18 @@ function DetailModal({
               {updating ? (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
               ) : (
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               )}
               {medicine.status === "rejected" ? "거절됨" : "거절"}
