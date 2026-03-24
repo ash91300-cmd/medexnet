@@ -11,6 +11,8 @@ import {
   calculateDiscountedPrice,
   parsePrice,
   formatPrice,
+  SHIPPING_COST,
+  calculateBuyerShippingCost,
 } from "@/lib/discount";
 
 interface DrugInfo {
@@ -24,6 +26,7 @@ interface DrugInfo {
 interface MedicineInfo {
   id: string;
   drug_id: number;
+  seller_id: string;
   quantity: number;
   expiry_date: string;
   is_opened: string;
@@ -49,6 +52,12 @@ interface DeliveryInfo {
   pharmacistName: string;
   phone: string;
   address: string;
+}
+
+interface SellerGroup {
+  sellerId: string;
+  pharmacyName: string;
+  items: CartItem[];
 }
 
 function getDrug(medicine: MedicineInfo): DrugInfo | null {
@@ -90,6 +99,7 @@ function CheckoutContent() {
     phone: "",
     address: "",
   });
+  const [pharmacyNames, setPharmacyNames] = useState<Record<string, string>>({});
 
   // 미인증 사용자 리다이렉트
   useEffect(() => {
@@ -115,7 +125,7 @@ function CheckoutContent() {
       const { data: cartData, error: cartError } = await supabase
         .from("cart_items")
         .select(
-          `id, medicine_id, quantity, medicines(id, drug_id, quantity, expiry_date, is_opened, condition, image_urls, drugs_Fe(product_code, product_name, company_name, max_price, unit))`,
+          `id, medicine_id, quantity, medicines(id, drug_id, seller_id, quantity, expiry_date, is_opened, condition, image_urls, drugs_Fe(product_code, product_name, company_name, max_price, unit))`,
         )
         .eq("user_id", user!.id)
         .order("created_at", { ascending: false });
@@ -131,7 +141,37 @@ function CheckoutContent() {
         return;
       }
 
-      setCartItems(cartData as CartItem[]);
+      const items = cartData as CartItem[];
+      setCartItems(items);
+
+      // 판매약국 이름 조회
+      const sellerIds = [
+        ...new Set(
+          items
+            .map((item) => getMedicine(item)?.seller_id)
+            .filter((id): id is string => !!id),
+        ),
+      ];
+
+      if (sellerIds.length > 0) {
+        const { data: sellerVerData } = await supabase
+          .from("verification_requests")
+          .select("user_id, pharmacy_name")
+          .in("user_id", sellerIds)
+          .eq("status", "approved");
+
+        if (sellerVerData) {
+          const names: Record<string, string> = {};
+          for (const v of sellerVerData) {
+            if (v.pharmacy_name) {
+              const name = v.pharmacy_name as string;
+              names[v.user_id] =
+                name.length > 2 ? name.slice(0, 2) + "***" : name + "***";
+            }
+          }
+          setPharmacyNames(names);
+        }
+      }
 
       // 약사 인증 정보 자동 채우기
       const { data: verData } = await supabase
@@ -168,15 +208,44 @@ function CheckoutContent() {
       drug?.max_price ?? "0",
       medicine.expiry_date,
       medicine.is_opened,
-      medicine.condition,
     );
   }
 
-  // 총 결제 금액
-  function getTotalPrice(): number {
+  // 상품 금액 합계
+  function getProductTotal(): number {
     return cartItems.reduce((sum, item) => {
       return sum + getDiscountedPrice(item) * item.quantity;
     }, 0);
+  }
+
+  // 판매약국별 그룹핑
+  function getSellerGroups(): SellerGroup[] {
+    const map = new Map<string, SellerGroup>();
+    for (const item of cartItems) {
+      const medicine = getMedicine(item);
+      if (!medicine) continue;
+      const sellerId = medicine.seller_id;
+      let group = map.get(sellerId);
+      if (!group) {
+        group = {
+          sellerId,
+          pharmacyName: pharmacyNames[sellerId] ?? "알 수 없는 약국",
+          items: [],
+        };
+        map.set(sellerId, group);
+      }
+      group.items.push(item);
+    }
+    return Array.from(map.values());
+  }
+
+  function getSellerCount(): number {
+    return getSellerGroups().length;
+  }
+
+  // 총 결제 금액 (상품 + 택배비 구매자 부담분)
+  function getTotalPrice(): number {
+    return getProductTotal() + calculateBuyerShippingCost(getSellerCount());
   }
 
   // 결제 (주문 생성)
@@ -257,7 +326,7 @@ function CheckoutContent() {
     }
   }
 
-  /* ── 로딩 ── */
+  /* -- 로딩 -- */
   if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -271,7 +340,19 @@ function CheckoutContent() {
 
   if (!user) return null;
 
-  /* ── 결제 페이지 ── */
+  const sellerGroups = getSellerGroups();
+  const sellerCount = sellerGroups.length;
+  const productTotal = getProductTotal();
+  const buyerShipping = calculateBuyerShippingCost(sellerCount);
+  const originalTotal = cartItems.reduce((sum, item) => {
+    const medicine = getMedicine(item);
+    if (!medicine) return sum;
+    const drug = getDrug(medicine);
+    return sum + parsePrice(drug?.max_price ?? "0") * item.quantity;
+  }, 0);
+  const discountAmount = originalTotal - productTotal;
+
+  /* -- 결제 페이지 -- */
   return (
     <div className="min-h-screen bg-gray-50">
       {/* 토스트 */}
@@ -325,7 +406,7 @@ function CheckoutContent() {
         <h1 className="text-2xl font-bold text-gray-900 mb-8">주문 / 결제</h1>
 
         <div className="space-y-6">
-          {/* ── 주문 약품 목록 ── */}
+          {/* -- 주문 약품 목록 (판매약국별 그룹) -- */}
           <section className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100">
               <h2 className="text-lg font-bold text-gray-900">
@@ -335,81 +416,113 @@ function CheckoutContent() {
                 </span>
               </h2>
             </div>
-            <div className="divide-y divide-gray-100">
-              {cartItems.map((item) => {
-                const medicine = getMedicine(item);
-                if (!medicine) return null;
-                const drug = getDrug(medicine);
-                const maxPrice = parsePrice(drug?.max_price ?? "0");
-                const discountRate = calculateDiscountRate(
-                  medicine.expiry_date,
-                  medicine.is_opened,
-                  medicine.condition,
-                );
-                const discountedPrice = getDiscountedPrice(item);
 
-                return (
-                  <div key={item.id} className="flex items-center gap-4 p-4">
-                    {/* 이미지 */}
-                    <div className="relative w-14 h-14 flex-shrink-0 bg-gray-50 rounded-xl overflow-hidden">
-                      {medicine.image_urls?.[0] ? (
-                        <Image
-                          src={medicine.image_urls[0]}
-                          alt={drug?.product_name ?? "약품"}
-                          fill
-                          sizes="56px"
-                          className="object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <svg
-                            className="w-5 h-5 text-gray-300"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth={1}
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z"
-                            />
-                          </svg>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* 약품 정보 */}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">
-                        {drug?.product_name ?? "알 수 없는 약품"}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-0.5">
-                        {drug?.company_name} · 수량 {item.quantity}개
-                      </p>
-                    </div>
-
-                    {/* 가격 */}
-                    <div className="text-right flex-shrink-0">
-                      <div className="flex items-center gap-1.5 justify-end">
-                        <span className="text-xs text-red-500 font-semibold">
-                          {Math.round(discountRate * 100)}%
-                        </span>
-                        <span className="text-xs text-gray-400 line-through">
-                          {formatPrice(maxPrice)}원
-                        </span>
-                      </div>
-                      <p className="text-sm font-bold text-gray-900 mt-0.5">
-                        {formatPrice(discountedPrice * item.quantity)}원
-                      </p>
-                    </div>
+            {sellerGroups.map((group) => (
+              <div key={group.sellerId}>
+                {/* 약국 헤더 */}
+                <div className="flex items-center justify-between px-6 py-2.5 bg-gray-50 border-b border-gray-100">
+                  <div className="flex items-center gap-2">
+                    <svg
+                      className="w-4 h-4 text-gray-500"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={1.5}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 003.75.614m-16.5 0a3.004 3.004 0 01-.621-4.72L4.318 3.44A1.5 1.5 0 015.378 3h13.243a1.5 1.5 0 011.06.44l1.19 1.189a3 3 0 01-.621 4.72m-13.5 8.65h3.75a.75.75 0 00.75-.75V13.5a.75.75 0 00-.75-.75H6.75a.75.75 0 00-.75.75v3.15c0 .415.336.75.75.75z"
+                      />
+                    </svg>
+                    <span className="text-sm font-medium text-gray-700">
+                      {group.pharmacyName}
+                    </span>
                   </div>
-                );
-              })}
-            </div>
+                  <span className="text-xs text-gray-500">
+                    택배비 {formatPrice(SHIPPING_COST)}원
+                  </span>
+                </div>
+
+                {/* 약품 목록 */}
+                <div className="divide-y divide-gray-100">
+                  {group.items.map((item) => {
+                    const medicine = getMedicine(item);
+                    if (!medicine) return null;
+                    const drug = getDrug(medicine);
+                    const maxPrice = parsePrice(drug?.max_price ?? "0");
+                    const discountRate = calculateDiscountRate(
+                      medicine.expiry_date,
+                      medicine.is_opened,
+                    );
+                    const discountedPrice = getDiscountedPrice(item);
+
+                    return (
+                      <div key={item.id} className="flex items-center gap-4 p-4">
+                        {/* 이미지 */}
+                        <div className="relative w-14 h-14 flex-shrink-0 bg-gray-50 rounded-xl overflow-hidden">
+                          {medicine.image_urls?.[0] ? (
+                            <Image
+                              src={medicine.image_urls[0]}
+                              alt={drug?.product_name ?? "약품"}
+                              fill
+                              sizes="56px"
+                              className="object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <svg
+                                className="w-5 h-5 text-gray-300"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth={1}
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z"
+                                />
+                              </svg>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* 약품 정보 */}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">
+                            {drug?.product_name ?? "알 수 없는 약품"}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-0.5">
+                            {drug?.company_name} · 수량 {item.quantity}개
+                          </p>
+                        </div>
+
+                        {/* 가격 */}
+                        <div className="text-right flex-shrink-0">
+                          <div className="flex items-center gap-1.5 justify-end">
+                            {discountRate > 0 && (
+                              <span className="text-xs text-red-500 font-semibold">
+                                {Math.round(discountRate * 100)}%
+                              </span>
+                            )}
+                            <span className="text-xs text-gray-400 line-through">
+                              {formatPrice(maxPrice)}원
+                            </span>
+                          </div>
+                          <p className="text-sm font-bold text-gray-900 mt-0.5">
+                            {formatPrice(discountedPrice * item.quantity)}원
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </section>
 
-          {/* ── 배송 정보 (약사 인증 정보에서 자동 입력) ── */}
+          {/* -- 배송 정보 (약사 인증 정보에서 자동 입력) -- */}
           <section className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100">
               <h2 className="text-lg font-bold text-gray-900">배송 정보</h2>
@@ -455,43 +568,37 @@ function CheckoutContent() {
             </div>
           </section>
 
-          {/* ── 결제 요약 + 결제 버튼 ── */}
+          {/* -- 결제 요약 + 결제 버튼 -- */}
           <section className="bg-white rounded-2xl border border-gray-100 p-6">
             <h2 className="text-lg font-bold text-gray-900 mb-4">결제 금액</h2>
             <div className="space-y-2 mb-4">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-500">상품 금액</span>
+                <span className="text-gray-500">상품 금액 (약가상한 기준)</span>
                 <span className="text-gray-900">
-                  {formatPrice(
-                    cartItems.reduce((sum, item) => {
-                      const medicine = getMedicine(item);
-                      if (!medicine) return sum;
-                      const drug = getDrug(medicine);
-                      return (
-                        sum + parsePrice(drug?.max_price ?? "0") * item.quantity
-                      );
-                    }, 0),
-                  )}
-                  원
+                  {formatPrice(originalTotal)}원
                 </span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">할인 금액</span>
                 <span className="text-red-500">
-                  -
-                  {formatPrice(
-                    cartItems.reduce((sum, item) => {
-                      const medicine = getMedicine(item);
-                      if (!medicine) return sum;
-                      const drug = getDrug(medicine);
-                      const original =
-                        parsePrice(drug?.max_price ?? "0") * item.quantity;
-                      const discounted =
-                        getDiscountedPrice(item) * item.quantity;
-                      return sum + (original - discounted);
-                    }, 0),
-                  )}
-                  원
+                  -{formatPrice(discountAmount)}원
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">판매가 소계</span>
+                <span className="text-gray-900">
+                  {formatPrice(productTotal)}원
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">
+                  택배비 (구매자 부담 50%)
+                </span>
+                <span className="text-gray-900">
+                  {formatPrice(buyerShipping)}원
+                  <span className="text-xs text-gray-400 ml-1">
+                    ({sellerCount}건 x {formatPrice(SHIPPING_COST / 2)}원)
+                  </span>
                 </span>
               </div>
               <div className="border-t border-gray-100 pt-3 mt-3">

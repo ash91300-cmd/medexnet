@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import Navbar from "@/components/Navbar";
-import { formatPrice, parsePrice, calculateDiscountedPrice } from "@/lib/discount";
+import { formatPrice } from "@/lib/discount";
 
 /* ──────────────────────── 타입 ──────────────────────── */
 

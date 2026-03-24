@@ -9,8 +9,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import {
   calculateDiscountRate,
   calculateDiscountedPrice,
-  parsePrice,
   formatPrice,
+  SHIPPING_COST,
+  calculateBuyerShippingCost,
 } from "@/lib/discount";
 
 interface DrugInfo {
@@ -24,6 +25,7 @@ interface DrugInfo {
 interface MedicineInfo {
   id: string;
   drug_id: number;
+  seller_id: string;
   quantity: number;
   expiry_date: string;
   is_opened: string;
@@ -69,7 +71,7 @@ export default function FloatingCart() {
     const { data } = await supabase
       .from("cart_items")
       .select(
-        `id, medicine_id, quantity, medicines(id, drug_id, quantity, expiry_date, is_opened, condition, image_urls, drugs_Fe(product_code, product_name, company_name, max_price, unit))`,
+        `id, medicine_id, quantity, medicines(id, drug_id, seller_id, quantity, expiry_date, is_opened, condition, image_urls, drugs_Fe(product_code, product_name, company_name, max_price, unit))`,
       )
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
@@ -140,7 +142,7 @@ export default function FloatingCart() {
     });
   }
 
-  function getTotalPrice(): number {
+  function getProductTotal(): number {
     return cartItems.reduce((sum, item) => {
       const medicine = getMedicine(item);
       if (!medicine) return sum;
@@ -149,10 +151,22 @@ export default function FloatingCart() {
         drug?.max_price ?? "0",
         medicine.expiry_date,
         medicine.is_opened,
-        medicine.condition,
       );
       return sum + discounted * item.quantity;
     }, 0);
+  }
+
+  function getSellerCount(): number {
+    const sellers = new Set<string>();
+    for (const item of cartItems) {
+      const medicine = getMedicine(item);
+      if (medicine) sellers.add(medicine.seller_id);
+    }
+    return sellers.size;
+  }
+
+  function getTotalPrice(): number {
+    return getProductTotal() + calculateBuyerShippingCost(getSellerCount());
   }
 
   // 비로그인 또는 미인증 사용자에게는 표시하지 않음
@@ -255,13 +269,11 @@ export default function FloatingCart() {
                   const discountRate = calculateDiscountRate(
                     medicine.expiry_date,
                     medicine.is_opened,
-                    medicine.condition,
                   );
                   const discountedPrice = calculateDiscountedPrice(
                     drug?.max_price ?? "0",
                     medicine.expiry_date,
                     medicine.is_opened,
-                    medicine.condition,
                   );
                   const isUpdating = updatingIds.has(item.id);
 
@@ -313,9 +325,11 @@ export default function FloatingCart() {
                           {drug?.product_name ?? "알 수 없는 약품"}
                         </Link>
                         <div className="flex items-center gap-1.5 mt-0.5">
-                          <span className="text-xs text-red-500 font-semibold">
-                            {Math.round(discountRate * 100)}%
-                          </span>
+                          {discountRate > 0 && (
+                            <span className="text-xs text-red-500 font-semibold">
+                              {Math.round(discountRate * 100)}%
+                            </span>
+                          )}
                           <span className="text-sm font-bold text-gray-900">
                             {formatPrice(discountedPrice)}원
                           </span>
@@ -403,11 +417,25 @@ export default function FloatingCart() {
           {/* 푸터 */}
           {cartItems.length > 0 && (
             <div className="border-t border-gray-100 px-5 py-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">총 결제 금액</span>
-                <span className="text-lg font-bold text-gray-900">
-                  {formatPrice(getTotalPrice())}원
-                </span>
+              <div className="space-y-1">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-500">상품 금액</span>
+                  <span className="text-gray-900">
+                    {formatPrice(getProductTotal())}원
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-500">택배비 (50%)</span>
+                  <span className="text-gray-900">
+                    +{formatPrice(calculateBuyerShippingCost(getSellerCount()))}원
+                  </span>
+                </div>
+                <div className="flex items-center justify-between pt-1 border-t border-gray-100">
+                  <span className="text-sm font-medium text-gray-600">총 결제 금액</span>
+                  <span className="text-lg font-bold text-gray-900">
+                    {formatPrice(getTotalPrice())}원
+                  </span>
+                </div>
               </div>
               <div className="flex gap-2">
                 <Link

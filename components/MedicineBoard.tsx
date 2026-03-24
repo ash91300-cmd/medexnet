@@ -3,6 +3,13 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import {
+  calculateDiscountRate,
+  calculateSellingPrice,
+  parsePrice,
+  formatPrice,
+  isTradeable,
+} from "@/lib/discount";
 
 interface DrugInfo {
   product_code: number;
@@ -187,30 +194,31 @@ function MedicineCard({ medicine }: { medicine: MedicineRow }) {
     : (raw ?? null);
   const productName = drug?.product_name ?? "알 수 없는 약품";
   const companyName = drug?.company_name ?? "-";
-  const maxPrice = drug?.max_price ?? "-";
+  const maxPriceStr = drug?.max_price ?? "0";
+  const maxPrice = parsePrice(maxPriceStr);
   const unit = drug?.unit ?? "";
 
   const expiryDate = new Date(medicine.expiry_date);
   const formattedExpiry = `${expiryDate.getFullYear()}.${String(expiryDate.getMonth() + 1).padStart(2, "0")}.${String(expiryDate.getDate()).padStart(2, "0")}`;
 
+  const tradeable = isTradeable(medicine.expiry_date);
   const isExpired = expiryDate < new Date();
   const thumbnail = medicine.image_urls?.[0] ?? null;
 
-  const conditionLabel: Record<string, string> = {
-    상: "상 (새것과 동일)",
-    중: "중 (양호)",
-    하: "하 (사용감 있음)",
-  };
-  const conditionColor: Record<string, string> = {
-    상: "bg-green-100 text-green-700",
-    중: "bg-yellow-100 text-yellow-700",
-    하: "bg-red-100 text-red-700",
-  };
+  const discountRate = calculateDiscountRate(
+    medicine.expiry_date,
+    medicine.is_opened,
+  );
+  const sellingPrice = calculateSellingPrice(
+    maxPriceStr,
+    medicine.expiry_date,
+    medicine.is_opened,
+  );
 
   return (
     <Link
       href={`/medicines/${medicine.id}`}
-      className="block bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg hover:border-gray-200 transition-all cursor-pointer"
+      className={`block bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg hover:border-gray-200 transition-all cursor-pointer ${!tradeable ? "opacity-60" : ""}`}
     >
       {/* 이미지 */}
       <div className="aspect-[4/3] bg-gray-50 relative overflow-hidden">
@@ -240,16 +248,24 @@ function MedicineCard({ medicine }: { medicine: MedicineRow }) {
         {/* 배지들 */}
         <div className="absolute top-2 left-2 flex gap-1.5">
           <span
-            className={`text-xs font-medium px-2 py-0.5 rounded-full ${conditionColor[medicine.condition] ?? "bg-gray-100 text-gray-600"}`}
-          >
-            {medicine.condition}
-          </span>
-          <span
             className={`text-xs font-medium px-2 py-0.5 rounded-full ${medicine.is_opened === "미개봉" ? "bg-blue-100 text-blue-700" : "bg-orange-100 text-orange-700"}`}
           >
             {medicine.is_opened}
           </span>
+          {!tradeable && (
+            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-red-500 text-white">
+              거래불가
+            </span>
+          )}
         </div>
+        {/* 할인율 배지 */}
+        {tradeable && discountRate > 0 && (
+          <div className="absolute top-2 right-2">
+            <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+              {Math.round(discountRate * 100)}%
+            </span>
+          </div>
+        )}
       </div>
 
       {/* 정보 */}
@@ -260,12 +276,28 @@ function MedicineCard({ medicine }: { medicine: MedicineRow }) {
         <p className="text-xs text-gray-500 mb-3">{companyName}</p>
 
         <div className="space-y-1.5 text-sm">
-          <div className="flex justify-between">
-            <span className="text-gray-500">상한가</span>
-            <span className="font-semibold text-blue-600">
-              {maxPrice}원 / {unit}
-            </span>
+          {/* 가격 정보 */}
+          <div className="flex justify-between items-center">
+            <span className="text-gray-500">판매가</span>
+            {tradeable ? (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-400 line-through">
+                  {formatPrice(maxPrice)}원
+                </span>
+                <span className="font-bold text-blue-600">
+                  {formatPrice(sellingPrice)}원
+                </span>
+              </div>
+            ) : (
+              <span className="font-medium text-red-500">거래불가</span>
+            )}
           </div>
+          {tradeable && (
+            <div className="flex justify-between">
+              <span className="text-gray-500">단위</span>
+              <span className="font-medium text-gray-900">{unit}</span>
+            </div>
+          )}
           <div className="flex justify-between">
             <span className="text-gray-500">수량</span>
             <span className="font-medium text-gray-900">
@@ -275,16 +307,10 @@ function MedicineCard({ medicine }: { medicine: MedicineRow }) {
           <div className="flex justify-between">
             <span className="text-gray-500">유통기한</span>
             <span
-              className={`font-medium ${isExpired ? "text-red-500" : "text-gray-900"}`}
+              className={`font-medium ${isExpired || !tradeable ? "text-red-500" : "text-gray-900"}`}
             >
               {formattedExpiry}
               {isExpired && " (만료)"}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-500">제품상태</span>
-            <span className="font-medium text-gray-900">
-              {conditionLabel[medicine.condition] ?? medicine.condition}
             </span>
           </div>
         </div>

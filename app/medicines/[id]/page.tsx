@@ -9,10 +9,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import Navbar from "@/components/Navbar";
 import {
   calculateDiscountRate,
-  calculateDiscountedPrice,
+  calculateSellingPrice,
+  calculateCommission,
+  calculatePurchasePrice,
   parsePrice,
   formatPrice,
   getRemainingDays,
+  isTradeable,
 } from "@/lib/discount";
 
 interface Toast {
@@ -41,18 +44,6 @@ interface MedicineDetail {
   seller_id: string;
   drugs_Fe: DrugInfo | DrugInfo[] | null;
 }
-
-const CONDITION_LABEL: Record<string, string> = {
-  상: "상 (새것과 동일)",
-  중: "중 (양호)",
-  하: "하 (사용감 있음)",
-};
-
-const CONDITION_COLOR: Record<string, string> = {
-  상: "bg-green-100 text-green-700",
-  중: "bg-yellow-100 text-yellow-700",
-  하: "bg-red-100 text-red-700",
-};
 
 export default function MedicineDetailPage() {
   const params = useParams();
@@ -86,6 +77,12 @@ export default function MedicineDetailPage() {
       return;
     }
     if (!medicine) return;
+
+    // 거래 불가 체크
+    if (!isTradeable(medicine.expiry_date)) {
+      showToast("유효기간 1개월 미만 약품은 거래할 수 없습니다.", "error");
+      return;
+    }
 
     // 본인이 등록한 약품 체크
     if (medicine.seller_id === user.id) {
@@ -213,7 +210,7 @@ export default function MedicineDetailPage() {
     if (id) fetchMedicine();
   }, [id]);
 
-  /* ── 로딩 ── */
+  /* -- 로딩 -- */
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -225,7 +222,7 @@ export default function MedicineDetailPage() {
     );
   }
 
-  /* ── 404 ── */
+  /* -- 404 -- */
   if (!medicine) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -265,22 +262,23 @@ export default function MedicineDetailPage() {
     );
   }
 
-  /* ── 데이터 계산 ── */
+  /* -- 데이터 계산 -- */
   const drug: DrugInfo | null = Array.isArray(medicine.drugs_Fe)
     ? (medicine.drugs_Fe[0] ?? null)
     : (medicine.drugs_Fe ?? null);
   const maxPrice = parsePrice(drug?.max_price ?? "0");
+  const tradeable = isTradeable(medicine.expiry_date);
   const discountRate = calculateDiscountRate(
     medicine.expiry_date,
     medicine.is_opened,
-    medicine.condition,
   );
-  const discountedPrice = calculateDiscountedPrice(
+  const sellingPrice = calculateSellingPrice(
     drug?.max_price ?? "0",
     medicine.expiry_date,
     medicine.is_opened,
-    medicine.condition,
   );
+  const commission = calculateCommission(sellingPrice);
+  const purchasePrice = calculatePurchasePrice(sellingPrice);
   const remainingDays = getRemainingDays(medicine.expiry_date);
   const isExpired = remainingDays <= 0;
 
@@ -361,7 +359,7 @@ export default function MedicineDetailPage() {
 
         <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
           <div className="grid grid-cols-1 md:grid-cols-2">
-            {/* ── 이미지 섹션 ── */}
+            {/* -- 이미지 섹션 -- */}
             <div className="p-6">
               <div className="aspect-square bg-gray-50 rounded-xl overflow-hidden mb-3 relative">
                 {medicine.image_urls?.[selectedImage] ? (
@@ -417,7 +415,7 @@ export default function MedicineDetailPage() {
               )}
             </div>
 
-            {/* ── 정보 섹션 ── */}
+            {/* -- 정보 섹션 -- */}
             <div className="p-6 md:border-l border-t md:border-t-0 border-gray-100">
               {/* 배지 */}
               <div className="flex gap-2 mb-3">
@@ -430,14 +428,11 @@ export default function MedicineDetailPage() {
                 >
                   {medicine.is_opened}
                 </span>
-                <span
-                  className={`text-xs font-medium px-2.5 py-1 rounded-full ${
-                    CONDITION_COLOR[medicine.condition] ??
-                    "bg-gray-100 text-gray-600"
-                  }`}
-                >
-                  {CONDITION_LABEL[medicine.condition] ?? medicine.condition}
-                </span>
+                {!tradeable && (
+                  <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-red-500 text-white">
+                    거래불가
+                  </span>
+                )}
               </div>
 
               {/* 약품명 */}
@@ -450,20 +445,53 @@ export default function MedicineDetailPage() {
 
               {/* 가격 · 할인 */}
               <div className="bg-gray-50 rounded-xl p-4 mb-6">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="bg-red-500 text-white text-sm font-bold px-2 py-0.5 rounded">
-                    {Math.round(discountRate * 100)}%
-                  </span>
-                  <span className="text-gray-400 line-through text-sm">
-                    {formatPrice(maxPrice)}원
-                  </span>
-                </div>
-                <p className="text-2xl font-bold text-gray-900">
-                  {formatPrice(discountedPrice)}원
-                  <span className="text-sm font-normal text-gray-500 ml-1">
-                    / {drug?.unit ?? ""}
-                  </span>
-                </p>
+                {tradeable ? (
+                  <>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="bg-red-500 text-white text-sm font-bold px-2 py-0.5 rounded">
+                        {Math.round(discountRate * 100)}%
+                      </span>
+                      <span className="text-gray-400 line-through text-sm">
+                        {formatPrice(maxPrice)}원
+                      </span>
+                    </div>
+                    <p className="text-2xl font-bold text-gray-900 mb-3">
+                      {formatPrice(sellingPrice)}원
+                      <span className="text-sm font-normal text-gray-500 ml-1">
+                        / {drug?.unit ?? ""}
+                      </span>
+                    </p>
+                    <div className="border-t border-gray-200 pt-3 space-y-1.5">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-500">판매가 (구매약국 지불)</span>
+                        <span className="font-medium text-gray-900">
+                          {formatPrice(sellingPrice)}원
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-500">수수료 (3%)</span>
+                        <span className="font-medium text-gray-500">
+                          -{formatPrice(commission)}원
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-500">매입가 (판매약국 수령)</span>
+                        <span className="font-medium text-blue-600">
+                          {formatPrice(purchasePrice)}원
+                        </span>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-center py-2">
+                    <span className="text-lg font-bold text-red-500">
+                      거래불가
+                    </span>
+                    <p className="text-sm text-gray-500 mt-1">
+                      유효기간 1개월 미만 약품은 거래할 수 없습니다.
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* 상세 정보 테이블 */}
@@ -474,7 +502,7 @@ export default function MedicineDetailPage() {
                 />
                 <InfoRow label="제조사" value={drug?.company_name ?? "-"} />
                 <InfoRow
-                  label="단가 (상한가)"
+                  label="약가상한"
                   value={`${formatPrice(maxPrice)}원 / ${drug?.unit ?? ""}`}
                 />
                 <InfoRow
@@ -486,114 +514,120 @@ export default function MedicineDetailPage() {
                   value={
                     <span
                       className={
-                        isExpired
+                        isExpired || !tradeable
                           ? "text-red-500 font-medium"
                           : "text-gray-900 font-medium"
                       }
                     >
                       {formattedExpiry}
-                      {isExpired ? " (만료)" : ` (${remainingDays}일 남음)`}
+                      {isExpired
+                        ? " (만료)"
+                        : !tradeable
+                          ? " (1개월 미만)"
+                          : ` (${remainingDays}일 남음)`}
                     </span>
                   }
                 />
-                <InfoRow label="상태" value={medicine.is_opened} />
+                <InfoRow label="개봉여부" value={medicine.is_opened} />
                 {pharmacyName && (
                   <InfoRow label="등록 약국" value={pharmacyName} />
                 )}
               </div>
 
               {/* 수량 입력 + 장바구니 담기 */}
-              <div className="mt-6 flex items-center gap-3">
-                <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setCartQuantity((prev) => Math.max(1, prev - 1))
-                    }
-                    className="w-10 h-10 flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors"
-                  >
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M19.5 12h-15"
-                      />
-                    </svg>
-                  </button>
-                  <input
-                    type="number"
-                    min={1}
-                    max={medicine.quantity}
-                    value={cartQuantity}
-                    onChange={(e) => {
-                      const val = parseInt(e.target.value, 10);
-                      if (!isNaN(val) && val >= 1) {
-                        setCartQuantity(val);
-                      } else if (e.target.value === "") {
-                        setCartQuantity(1);
+              {tradeable && (
+                <div className="mt-6 flex items-center gap-3">
+                  <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setCartQuantity((prev) => Math.max(1, prev - 1))
                       }
-                    }}
-                    className="w-14 h-10 text-center text-sm font-medium text-gray-900 border-x border-gray-200 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                  />
+                      className="w-10 h-10 flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors"
+                    >
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M19.5 12h-15"
+                        />
+                      </svg>
+                    </button>
+                    <input
+                      type="number"
+                      min={1}
+                      max={medicine.quantity}
+                      value={cartQuantity}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value, 10);
+                        if (!isNaN(val) && val >= 1) {
+                          setCartQuantity(val);
+                        } else if (e.target.value === "") {
+                          setCartQuantity(1);
+                        }
+                      }}
+                      className="w-14 h-10 text-center text-sm font-medium text-gray-900 border-x border-gray-200 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setCartQuantity((prev) =>
+                          Math.min(medicine.quantity, prev + 1),
+                        )
+                      }
+                      className="w-10 h-10 flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors"
+                    >
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M12 4.5v15m7.5-7.5h-15"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                  <span className="text-xs text-gray-400">
+                    / {medicine.quantity}개
+                  </span>
                   <button
                     type="button"
-                    onClick={() =>
-                      setCartQuantity((prev) =>
-                        Math.min(medicine.quantity, prev + 1),
-                      )
-                    }
-                    className="w-10 h-10 flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors"
+                    onClick={handleAddToCart}
+                    disabled={addingToCart}
+                    className="flex-1 flex items-center justify-center gap-2 h-10 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white text-sm font-medium rounded-xl transition-colors"
                   >
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M12 4.5v15m7.5-7.5h-15"
-                      />
-                    </svg>
+                    {addingToCart ? (
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-5.98.286h11.356m-9.982 0h9.982m0 0a3 3 0 105.98.286M7.5 14.25H5.25m0 0L3.756 5.272M7.5 14.25l1.689-8.978m6.561 8.978a3 3 0 105.98.286m-5.98-.286H20.25m0 0l-1.244-8.978M12.75 5.272h7.5"
+                        />
+                      </svg>
+                    )}
+                    장바구니 담기
                   </button>
                 </div>
-                <span className="text-xs text-gray-400">
-                  / {medicine.quantity}개
-                </span>
-                <button
-                  type="button"
-                  onClick={handleAddToCart}
-                  disabled={addingToCart}
-                  className="flex-1 flex items-center justify-center gap-2 h-10 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white text-sm font-medium rounded-xl transition-colors"
-                >
-                  {addingToCart ? (
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-5.98.286h11.356m-9.982 0h9.982m0 0a3 3 0 105.98.286M7.5 14.25H5.25m0 0L3.756 5.272M7.5 14.25l1.689-8.978m6.561 8.978a3 3 0 105.98.286m-5.98-.286H20.25m0 0l-1.244-8.978M12.75 5.272h7.5"
-                      />
-                    </svg>
-                  )}
-                  장바구니 담기
-                </button>
-              </div>
+              )}
             </div>
           </div>
         </div>
