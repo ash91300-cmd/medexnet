@@ -27,7 +27,10 @@ export default function VerificationModal({
   const businessInputRef = useRef<HTMLInputElement>(null);
   const detailAddressRef = useRef<HTMLInputElement>(null);
 
+  const [isSearchingAddress, setIsSearchingAddress] = useState(false);
+
   const handleSearchAddress = () => {
+    setIsSearchingAddress(true);
     new (window as any).kakao.Postcode({
       oncomplete: (data: any) => {
         const fullAddress =
@@ -35,8 +38,12 @@ export default function VerificationModal({
         setZonecode(data.zonecode);
         setAddress(fullAddress);
         setDetailAddress("");
+        setIsSearchingAddress(false);
         // 주소 선택 후 상세주소 입력란에 포커스
         setTimeout(() => detailAddressRef.current?.focus(), 100);
+      },
+      onclose: () => {
+        setIsSearchingAddress(false);
       },
     }).open();
   };
@@ -117,11 +124,20 @@ export default function VerificationModal({
   };
 
   const modalContent = (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center">
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center"
+      onMouseDown={(e) => {
+        if (isSearchingAddress) return;
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-        onClick={onClose}
+        onMouseDown={(e) => {
+          if (isSearchingAddress) return;
+          if (e.target === e.currentTarget) onClose();
+        }}
       />
 
       {/* Modal */}
@@ -189,9 +205,21 @@ export default function VerificationModal({
             <input
               type="tel"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={(e) => {
+                const digits = e.target.value.replace(/\D/g, "").slice(0, 11);
+                let formatted = digits;
+                if (digits.length <= 3) {
+                  formatted = digits;
+                } else if (digits.length <= 7) {
+                  formatted = `${digits.slice(0, 3)}-${digits.slice(3)}`;
+                } else {
+                  formatted = `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
+                }
+                setPhone(formatted);
+              }}
               placeholder="예: 010-1234-5678"
               required
+              maxLength={13}
               className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>

@@ -37,7 +37,6 @@ interface MedicineDetail {
   quantity: number;
   expiry_date: string;
   is_opened: string;
-  condition: string;
   image_urls: string[];
   status: string;
   created_at: string;
@@ -81,6 +80,12 @@ export default function MedicineDetailPage() {
     // 거래 불가 체크
     if (!isTradeable(medicine.expiry_date)) {
       showToast("유효기간 1개월 미만 약품은 거래할 수 없습니다.", "error");
+      return;
+    }
+
+    // 품절 체크
+    if (medicine.quantity <= 0) {
+      showToast("품절된 약품입니다.", "error");
       return;
     }
 
@@ -173,7 +178,7 @@ export default function MedicineDetailPage() {
       const { data, error } = await supabase
         .from("medicines")
         .select(
-          `id, drug_id, seller_id, quantity, expiry_date, is_opened, condition, image_urls, status, created_at, drugs_Fe(product_code, product_name, company_name, max_price, unit)`,
+          `id, drug_id, seller_id, quantity, expiry_date, is_opened, image_urls, status, created_at, drugs_Fe(product_code, product_name, company_name, max_price, unit)`,
         )
         .eq("id", id)
         .single();
@@ -535,7 +540,7 @@ export default function MedicineDetailPage() {
               </div>
 
               {/* 수량 입력 + 장바구니 담기 */}
-              {tradeable && (
+              {tradeable && medicine.quantity > 0 && (
                 <div className="mt-6 flex items-center gap-3">
                   <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden">
                     <button
@@ -543,7 +548,8 @@ export default function MedicineDetailPage() {
                       onClick={() =>
                         setCartQuantity((prev) => Math.max(1, prev - 1))
                       }
-                      className="w-10 h-10 flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors"
+                      disabled={cartQuantity <= 1}
+                      className="w-10 h-10 flex items-center justify-center text-gray-500 hover:bg-gray-100 disabled:text-gray-300 disabled:hover:bg-transparent transition-colors"
                     >
                       <svg
                         className="w-4 h-4"
@@ -567,7 +573,7 @@ export default function MedicineDetailPage() {
                       onChange={(e) => {
                         const val = parseInt(e.target.value, 10);
                         if (!isNaN(val) && val >= 1) {
-                          setCartQuantity(val);
+                          setCartQuantity(Math.min(val, medicine.quantity));
                         } else if (e.target.value === "") {
                           setCartQuantity(1);
                         }
@@ -581,7 +587,8 @@ export default function MedicineDetailPage() {
                           Math.min(medicine.quantity, prev + 1),
                         )
                       }
-                      className="w-10 h-10 flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors"
+                      disabled={cartQuantity >= medicine.quantity}
+                      className="w-10 h-10 flex items-center justify-center text-gray-500 hover:bg-gray-100 disabled:text-gray-300 disabled:hover:bg-transparent transition-colors"
                     >
                       <svg
                         className="w-4 h-4"
@@ -626,6 +633,13 @@ export default function MedicineDetailPage() {
                     )}
                     장바구니 담기
                   </button>
+                </div>
+              )}
+
+              {/* 품절 표시 */}
+              {tradeable && medicine.quantity <= 0 && (
+                <div className="mt-6 py-3 bg-gray-100 rounded-xl text-center">
+                  <span className="text-sm font-semibold text-gray-500">품절</span>
                 </div>
               )}
             </div>

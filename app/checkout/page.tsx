@@ -30,7 +30,6 @@ interface MedicineInfo {
   quantity: number;
   expiry_date: string;
   is_opened: string;
-  condition: string;
   image_urls: string[];
   drugs_Fe: DrugInfo | DrugInfo[] | null;
 }
@@ -125,7 +124,7 @@ function CheckoutContent() {
       const { data: cartData, error: cartError } = await supabase
         .from("cart_items")
         .select(
-          `id, medicine_id, quantity, medicines(id, drug_id, seller_id, quantity, expiry_date, is_opened, condition, image_urls, drugs_Fe(product_code, product_name, company_name, max_price, unit))`,
+          `id, medicine_id, quantity, medicines(id, drug_id, seller_id, quantity, expiry_date, is_opened, image_urls, drugs_Fe(product_code, product_name, company_name, max_price, unit))`,
         )
         .eq("user_id", user!.id)
         .order("created_at", { ascending: false });
@@ -263,6 +262,28 @@ function CheckoutContent() {
     setSubmitting(true);
 
     try {
+      // 0. 재고 사전 검증 (주문 전 최신 재고 확인)
+      for (const item of cartItems) {
+        const medicine = getMedicine(item);
+        if (!medicine) continue;
+
+        const { data: latestMed } = await supabase
+          .from("medicines")
+          .select("quantity")
+          .eq("id", medicine.id)
+          .single();
+
+        if (!latestMed || latestMed.quantity < item.quantity) {
+          const drug = getDrug(medicine);
+          showToast(
+            `"${drug?.product_name ?? "약품"}"의 재고가 부족합니다. (남은 수량: ${latestMed?.quantity ?? 0}개)`,
+            "error",
+          );
+          setSubmitting(false);
+          return;
+        }
+      }
+
       const totalAmount = getTotalPrice();
 
       // 1. orders 테이블에 주문 생성
@@ -300,16 +321,28 @@ function CheckoutContent() {
         return;
       }
 
-      // 3. medicines 수량 차감
+      // 3. medicines 수량 차감 (원자적 재고 검증 + 차감)
       for (const item of cartItems) {
         const medicine = getMedicine(item);
         if (!medicine) continue;
 
-        const newQty = Math.max(0, medicine.quantity - item.quantity);
-        await supabase
-          .from("medicines")
-          .update({ quantity: newQty })
-          .eq("id", medicine.id);
+        const { error: stockError } = await supabase.rpc("deduct_stock", {
+          p_medicine_id: medicine.id,
+          p_quantity: item.quantity,
+        });
+
+        if (stockError) {
+          // 재고 부족 시 주문 취소
+          await supabase.from("order_items").delete().eq("order_id", order.id);
+          await supabase.from("orders").delete().eq("id", order.id);
+          const drug = getDrug(medicine);
+          showToast(
+            `"${drug?.product_name ?? "약품"}"의 재고가 부족합니다. 장바구니에서 수량을 확인해주세요.`,
+            "error",
+          );
+          setSubmitting(false);
+          return;
+        }
       }
 
       // 4. cart_items 비우기

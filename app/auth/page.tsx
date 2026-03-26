@@ -8,7 +8,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function LoginPage() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   const router = useRouter();
 
   const [tab, setTab] = useState<"login" | "signup">("login");
@@ -19,12 +19,16 @@ export default function LoginPage() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // 이미 로그인된 사용자는 홈으로 리다이렉트
+  // 이미 로그인된 사용자는 역할에 따라 리다이렉트
   useEffect(() => {
-    if (!authLoading && user) {
-      router.push("/");
+    if (!authLoading && user && profile) {
+      if (profile.role === "admin") {
+        router.push("/admin");
+      } else {
+        router.push("/");
+      }
     }
-  }, [user, authLoading, router]);
+  }, [user, profile, authLoading, router]);
 
   // 로딩 중이거나 이미 로그인된 경우 로딩 표시
   if (authLoading || user) {

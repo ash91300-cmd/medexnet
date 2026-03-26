@@ -22,10 +22,10 @@ interface DrugInfo {
 interface MedicineRow {
   id: string;
   drug_id: number;
+  seller_id: string;
   quantity: number;
   expiry_date: string;
   is_opened: string;
-  condition: string;
   image_urls: string[];
   status: string;
   created_at: string;
@@ -46,6 +46,7 @@ export default function MedicineBoard({
   const [medicines, setMedicines] = useState<MedicineRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [pharmacyNames, setPharmacyNames] = useState<Record<string, string>>({});
 
   useEffect(() => {
     async function fetchMedicines() {
@@ -55,6 +56,7 @@ export default function MedicineBoard({
       try {
         const isSearch = searchQuery.length >= 2;
         const isNumeric = /^\d+$/.test(searchQuery);
+        let medResult: MedicineRow[] = [];
 
         if (isSearch) {
           let drugQuery = supabase.from("drugs_Fe").select("product_code");
@@ -80,27 +82,53 @@ export default function MedicineBoard({
           const { data, error: medError } = await supabase
             .from("medicines")
             .select(
-              `id, drug_id, quantity, expiry_date, is_opened, condition, image_urls, status, created_at, drugs_Fe(product_code, product_name, company_name, max_price, unit)`,
+              `id, drug_id, seller_id, quantity, expiry_date, is_opened, image_urls, status, created_at, drugs_Fe(product_code, product_name, company_name, max_price, unit)`,
             )
             .in("drug_id", codes)
             .eq("status", "approved")
+            .gt("quantity", 0)
             .order("created_at", { ascending: false })
             .limit(20);
 
           if (medError) throw medError;
-          setMedicines((data as MedicineRow[]) ?? []);
+          medResult = (data as MedicineRow[]) ?? [];
         } else {
           const { data, error: medError } = await supabase
             .from("medicines")
             .select(
-              `id, drug_id, quantity, expiry_date, is_opened, condition, image_urls, status, created_at, drugs_Fe(product_code, product_name, company_name, max_price, unit)`,
+              `id, drug_id, seller_id, quantity, expiry_date, is_opened, image_urls, status, created_at, drugs_Fe(product_code, product_name, company_name, max_price, unit)`,
             )
             .eq("status", "approved")
+            .gt("quantity", 0)
             .order("created_at", { ascending: false })
             .limit(20);
 
           if (medError) throw medError;
-          setMedicines((data as MedicineRow[]) ?? []);
+          medResult = (data as MedicineRow[]) ?? [];
+        }
+
+        setMedicines(medResult);
+
+        // 판매자 약국명 일괄 조회
+        const sellerIds = [...new Set(medResult.map((m) => m.seller_id).filter(Boolean))];
+        if (sellerIds.length > 0) {
+          const { data: verData } = await supabase
+            .from("verification_requests")
+            .select("user_id, pharmacy_name")
+            .in("user_id", sellerIds)
+            .eq("status", "approved")
+            .order("created_at", { ascending: false });
+
+          if (verData) {
+            const nameMap: Record<string, string> = {};
+            for (const v of verData) {
+              if (v.user_id && v.pharmacy_name && !nameMap[v.user_id]) {
+                const name = v.pharmacy_name as string;
+                nameMap[v.user_id] = name.length > 2 ? name.slice(0, 2) + "***" : name + "***";
+              }
+            }
+            setPharmacyNames(nameMap);
+          }
         }
       } catch (err) {
         console.error("데이터 조회 실패:", err);
@@ -181,13 +209,13 @@ export default function MedicineBoard({
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {filtered.map((med) => (
-        <MedicineCard key={med.id} medicine={med} />
+        <MedicineCard key={med.id} medicine={med} pharmacyName={pharmacyNames[med.seller_id]} />
       ))}
     </div>
   );
 }
 
-function MedicineCard({ medicine }: { medicine: MedicineRow }) {
+function MedicineCard({ medicine, pharmacyName }: { medicine: MedicineRow; pharmacyName?: string }) {
   const raw = medicine.drugs_Fe;
   const drug: DrugInfo | null = Array.isArray(raw)
     ? (raw[0] ?? null)
@@ -273,7 +301,11 @@ function MedicineCard({ medicine }: { medicine: MedicineRow }) {
         <h3 className="font-bold text-gray-900 text-sm mb-0.5 line-clamp-2 leading-snug">
           {productName}
         </h3>
-        <p className="text-xs text-gray-500 mb-3">{companyName}</p>
+        <p className="text-xs text-gray-500 mb-1">{companyName}</p>
+        {pharmacyName && (
+          <p className="text-xs text-gray-400 mb-3">{pharmacyName}</p>
+        )}
+        {!pharmacyName && <div className="mb-2" />}
 
         <div className="space-y-1.5 text-sm">
           {/* 가격 정보 */}

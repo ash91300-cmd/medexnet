@@ -31,7 +31,6 @@ interface MedicineInfo {
   quantity: number;
   expiry_date: string;
   is_opened: string;
-  condition: string;
   image_urls: string[];
   drugs_Fe: DrugInfo | DrugInfo[] | null;
 }
@@ -112,7 +111,7 @@ function CartContent() {
     const { data, error } = await supabase
       .from("cart_items")
       .select(
-        `id, medicine_id, quantity, medicines(id, drug_id, seller_id, quantity, expiry_date, is_opened, condition, image_urls, drugs_Fe(product_code, product_name, company_name, max_price, unit))`,
+        `id, medicine_id, quantity, medicines(id, drug_id, seller_id, quantity, expiry_date, is_opened, image_urls, drugs_Fe(product_code, product_name, company_name, max_price, unit))`,
       )
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
@@ -167,6 +166,10 @@ function CartContent() {
   async function handleQuantityChange(item: CartItem, newQty: number) {
     const medicine = getMedicine(item);
     if (!medicine) return;
+
+    if (newQty > medicine.quantity) {
+      showToast(`재고가 ${medicine.quantity}개뿐입니다.`, "error");
+    }
 
     const clamped = Math.max(1, Math.min(newQty, medicine.quantity));
     if (clamped === item.quantity) return;

@@ -29,7 +29,6 @@ interface MedicineInfo {
   quantity: number;
   expiry_date: string;
   is_opened: string;
-  condition: string;
   image_urls: string[];
   drugs_Fe: DrugInfo | DrugInfo[] | null;
 }
@@ -71,7 +70,7 @@ export default function FloatingCart() {
     const { data } = await supabase
       .from("cart_items")
       .select(
-        `id, medicine_id, quantity, medicines(id, drug_id, seller_id, quantity, expiry_date, is_opened, condition, image_urls, drugs_Fe(product_code, product_name, company_name, max_price, unit))`,
+        `id, medicine_id, quantity, medicines(id, drug_id, seller_id, quantity, expiry_date, is_opened, image_urls, drugs_Fe(product_code, product_name, company_name, max_price, unit))`,
       )
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });

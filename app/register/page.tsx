@@ -50,7 +50,6 @@ function RegisterContent() {
   const [quantity, setQuantity] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
   const [isOpened, setIsOpened] = useState("미개봉");
-  const [condition, setCondition] = useState("상");
 
   // --- 3단계: 사진 업로드 ---
   const [photos, setPhotos] = useState<PhotoSlot[]>([
@@ -233,7 +232,6 @@ function RegisterContent() {
     setQuantity("");
     setExpiryDate("");
     setIsOpened("미개봉");
-    setCondition("상");
     setPhotos([
       {
         file: null,
@@ -302,7 +300,6 @@ function RegisterContent() {
         quantity: parseInt(quantity),
         expiry_date: expiryDate,
         is_opened: isOpened,
-        condition,
         image_urls: imageUrls,
         status: "pending",
       });
@@ -713,35 +710,6 @@ function RegisterContent() {
                   </div>
                 </div>
 
-                {/* 제품상태 */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    제품상태
-                  </label>
-                  <div className="grid grid-cols-3 gap-3">
-                    {[
-                      { value: "상", desc: "새것과 동일" },
-                      { value: "중", desc: "양호한 상태" },
-                      { value: "하", desc: "사용감 있음" },
-                    ].map((opt) => (
-                      <button
-                        key={opt.value}
-                        type="button"
-                        onClick={() => setCondition(opt.value)}
-                        className={`py-3 rounded-xl text-sm font-medium border-2 transition-colors ${
-                          condition === opt.value
-                            ? "border-blue-500 bg-blue-50 text-blue-700"
-                            : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
-                        }`}
-                      >
-                        <span className="block font-bold">{opt.value}</span>
-                        <span className="block text-xs mt-0.5 opacity-70">
-                          {opt.desc}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
               </div>
             </div>
           )}

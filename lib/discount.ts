@@ -56,13 +56,11 @@ export function isTradeable(expiryDate: string): boolean {
 
 /**
  * 할인율 계산 (최대 20%)
- * 제품 상태(상/중/하)는 할인율에 영향 없음 (관리자 승인 시 사진으로 판정)
  * @returns 할인율 (0~0.20), 거래불가 시 -1
  */
 export function calculateDiscountRate(
   expiryDate: string,
   isOpened: string,
-  _condition?: string,
 ): number {
   const months = getRemainingMonths(expiryDate);
   const days = getRemainingDays(expiryDate);
@@ -124,7 +122,6 @@ export function calculateDiscountedPrice(
   maxPrice: string,
   expiryDate: string,
   isOpened: string,
-  _condition?: string,
 ): number {
   return calculateSellingPrice(maxPrice, expiryDate, isOpened);
 }

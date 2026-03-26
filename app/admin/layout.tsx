@@ -128,12 +128,17 @@ export default function AdminLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
-    if (!loading && (!user || profile?.role !== "admin")) {
+    // profile이 아직 로드 중이면(user는 있는데 profile이 null) 리다이렉트하지 않음
+    if (!loading && !user) {
+      router.replace("/");
+    }
+    if (!loading && user && profile && profile.role !== "admin") {
       router.replace("/");
     }
   }, [loading, user, profile, router]);
 
-  if (loading) {
+  // 로딩 중이거나 profile 아직 로드 안 됨
+  if (loading || !user || !profile) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
@@ -141,7 +146,7 @@ export default function AdminLayout({
     );
   }
 
-  if (!user || profile?.role !== "admin") {
+  if (profile.role !== "admin") {
     return null;
   }
 

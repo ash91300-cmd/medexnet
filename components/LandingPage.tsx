@@ -211,7 +211,7 @@ export default function LandingPage() {
             <ProcessStep
               number={6}
               title="정산 완료"
-              description="수령확인 후 자동 정산"
+              description="구매확정 후 자동 정산"
             />
           </div>
         </div>
@@ -231,7 +231,7 @@ export default function LandingPage() {
               <SecurityItem text="약사면허 인증으로 검증된 회원만 이용" />
               <SecurityItem text="모든 약품 등록 관리자 검수 필수" />
               <SecurityItem text="에스크로 결제로 대금 안전 보관" />
-              <SecurityItem text="3일 내 수령확인 시스템" />
+              <SecurityItem text="3일 내 구매확정 시스템" />
               <SecurityItem text="분쟁 발생 시 운영팀 중재" />
             </ul>
           </div>

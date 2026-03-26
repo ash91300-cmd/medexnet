@@ -24,7 +24,6 @@ interface MedicineRow {
   quantity: number;
   expiry_date: string;
   is_opened: string;
-  condition: string;
   image_urls: string[];
   status: string;
   created_at: string;
@@ -99,7 +98,7 @@ function MyMedicinesContent() {
       const { data, error } = await supabase
         .from("medicines")
         .select(
-          `id, drug_id, quantity, expiry_date, is_opened, condition, image_urls, status, created_at,
+          `id, drug_id, quantity, expiry_date, is_opened, image_urls, status, created_at,
            drugs_Fe(product_code, product_name, company_name, max_price, unit)`
         )
         .eq("seller_id", user.id)
@@ -245,9 +244,9 @@ function MyMedicinesContent() {
                           </p>
                         </div>
                         <div>
-                          <span className="text-gray-500">상태</span>
+                          <span className="text-gray-500">개봉여부</span>
                           <p className="font-medium text-gray-900">
-                            {med.is_opened} / {med.condition}
+                            {med.is_opened}
                           </p>
                         </div>
                       </div>
@@ -342,7 +341,6 @@ function EditModal({
   const [quantity, setQuantity] = useState(String(medicine.quantity));
   const [expiryDate, setExpiryDate] = useState(medicine.expiry_date);
   const [isOpened, setIsOpened] = useState(medicine.is_opened);
-  const [condition, setCondition] = useState(medicine.condition);
   const [photos, setPhotos] = useState<PhotoSlot[]>(
     PHOTO_LABELS.map((p, i) => ({
       file: null,
@@ -424,7 +422,6 @@ function EditModal({
         quantity: parseInt(quantity),
         expiry_date: expiryDate,
         is_opened: isOpened,
-        condition,
         image_urls: imageUrls,
         status: "pending",
       };
@@ -508,32 +505,6 @@ function EditModal({
                   }`}
                 >
                   {opt}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* 제품상태 */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">제품상태</label>
-            <div className="grid grid-cols-3 gap-3">
-              {[
-                { value: "상", desc: "새것과 동일" },
-                { value: "중", desc: "양호한 상태" },
-                { value: "하", desc: "사용감 있음" },
-              ].map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => setCondition(opt.value)}
-                  className={`py-3 rounded-xl text-sm font-medium border-2 transition-colors ${
-                    condition === opt.value
-                      ? "border-blue-500 bg-blue-50 text-blue-700"
-                      : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
-                  }`}
-                >
-                  <span className="block font-bold">{opt.value}</span>
-                  <span className="block text-xs mt-0.5 opacity-70">{opt.desc}</span>
                 </button>
               ))}
             </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
@@ -32,6 +32,15 @@ interface SaleOrder {
   items: SaleItem[];
   total_amount: number;
 }
+
+const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
+  pending: { label: "주문접수", color: "bg-amber-100 text-amber-700" },
+  confirmed: { label: "결제완료", color: "bg-blue-100 text-blue-700" },
+  shipping: { label: "배송중", color: "bg-indigo-100 text-indigo-700" },
+  delivered: { label: "배송완료", color: "bg-teal-100 text-teal-700" },
+  completed: { label: "거래완료", color: "bg-emerald-100 text-emerald-700" },
+  cancelled: { label: "취소", color: "bg-red-100 text-red-700" },
+};
 
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr);
@@ -77,28 +86,53 @@ function SalesContent() {
     }
   }, [authLoading, user, profile, router]);
 
-  useEffect(() => {
-    async function fetchSales() {
-      if (!user) {
-        setSales([]);
-        setLoading(false);
-        return;
-      }
-
-      const { data, error } = await supabase.rpc("get_sales_history");
-
-      if (error) {
-        console.error("판매 내역 조회 실패:", error);
-        setLoading(false);
-        return;
-      }
-
-      setSales((data as SaleItem[]) ?? []);
+  const fetchSales = useCallback(async () => {
+    if (!user) {
+      setSales([]);
       setLoading(false);
+      return;
     }
 
+    const { data, error } = await supabase.rpc("get_sales_history");
+
+    if (error) {
+      console.error("판매 내역 조회 실패:", error);
+      setLoading(false);
+      return;
+    }
+
+    setSales((data as SaleItem[]) ?? []);
+    setLoading(false);
+  }, [user]);
+
+  useEffect(() => {
     if (!authLoading) fetchSales();
-  }, [user, authLoading]);
+  }, [authLoading, fetchSales]);
+
+  // Supabase Realtime: 주문 상태 변경 시 자동 갱신
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel("seller-sales-realtime")
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "orders" },
+        (payload) => {
+          const updated = payload.new as {
+            id: string; status: string; tracking_number: string | null; courier: string | null;
+          };
+          setSales((prev) =>
+            prev.map((item) =>
+              item.order_id === updated.id
+                ? { ...item, order_status: updated.status, tracking_number: updated.tracking_number, courier: updated.courier }
+                : item
+            )
+          );
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user]);
 
   if (authLoading || loading) {
     return (
@@ -181,70 +215,78 @@ function SalesContent() {
 
         {/* 주문별 판매 내역 */}
         <div className="space-y-4">
-          {orders.map((order) => (
-            <div
-              key={order.order_id}
-              className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-            >
-              {/* 주문 헤더 */}
-              <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
-                  <span className="text-sm font-medium text-gray-900">
-                    {formatDate(order.sale_date)}
+          {orders.map((order) => {
+            const statusInfo = STATUS_CONFIG[order.order_status] ?? { label: order.order_status, color: "bg-gray-100 text-gray-700" };
+            return (
+              <div
+                key={order.order_id}
+                className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
+              >
+                {/* 주문 헤더 */}
+                <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                    <span className="text-sm font-medium text-gray-900">
+                      {formatDate(order.sale_date)}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      구매자: {order.buyer_pharmacy_name}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${statusInfo.color}`}>
+                      {statusInfo.label}
+                    </span>
+                    <span className="text-xs text-gray-400 font-mono">
+                      {order.order_id.slice(0, 8)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* 배송 상태 스텝바 */}
+                <OrderStatusStepper
+                  order={{
+                    status: order.order_status,
+                    tracking_number: order.tracking_number,
+                    courier: order.courier,
+                  }}
+                />
+
+                {/* 약품 목록 */}
+                <div className="divide-y divide-gray-50">
+                  {order.items.map((item) => (
+                    <div
+                      key={item.order_item_id}
+                      className="flex items-center justify-between px-5 py-3"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-gray-900 truncate">
+                          {item.product_name}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-4 flex-shrink-0 ml-4">
+                        <span className="text-xs text-gray-500">
+                          {item.quantity}개
+                        </span>
+                        <span className="text-sm font-medium text-gray-900 w-24 text-right">
+                          {formatPrice(Number(item.sale_amount))}원
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* 총 판매 금액 */}
+                <div className="flex items-center justify-between px-5 py-4 bg-gray-50 border-t border-gray-100">
+                  <span className="text-sm font-medium text-gray-600">
+                    주문 금액
                   </span>
-                  <span className="text-xs text-gray-500">
-                    구매자: {order.buyer_pharmacy_name}
+                  <span className="text-lg font-bold text-gray-900">
+                    {formatPrice(order.total_amount)}원
                   </span>
                 </div>
-                <span className="text-xs text-gray-400 font-mono">
-                  {order.order_id.slice(0, 8)}
-                </span>
               </div>
-
-              {/* 배송 상태 스텝바 */}
-              <OrderStatusStepper
-                order={{
-                  status: order.order_status,
-                  tracking_number: order.tracking_number,
-                  courier: order.courier,
-                }}
-              />
-
-              {/* 약품 목록 */}
-              <div className="divide-y divide-gray-50">
-                {order.items.map((item) => (
-                  <div
-                    key={item.order_item_id}
-                    className="flex items-center justify-between px-5 py-3"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-900 truncate">
-                        {item.product_name}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-4 flex-shrink-0 ml-4">
-                      <span className="text-xs text-gray-500">
-                        {item.quantity}개
-                      </span>
-                      <span className="text-sm font-medium text-gray-900 w-24 text-right">
-                        {formatPrice(Number(item.sale_amount))}원
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* 총 판매 금액 */}
-              <div className="flex items-center justify-between px-5 py-4 bg-gray-50 border-t border-gray-100">
-                <span className="text-sm font-medium text-gray-600">
-                  주문 금액
-                </span>
-                <span className="text-lg font-bold text-gray-900">
-                  {formatPrice(order.total_amount)}원
-                </span>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </main>
     </div>

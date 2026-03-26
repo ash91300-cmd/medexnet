@@ -20,7 +20,6 @@ interface MedicineRow {
   quantity: number;
   expiry_date: string;
   is_opened: string;
-  condition: string;
   image_urls: string[];
   status: string;
   created_at: string;
@@ -53,18 +52,6 @@ const STATUS_BADGE: Record<string, { label: string; className: string }> = {
     label: "거절",
     className: "bg-red-100 text-red-700",
   },
-};
-
-const CONDITION_LABEL: Record<string, string> = {
-  상: "상 (새것과 동일)",
-  중: "중 (양호)",
-  하: "하 (사용감 있음)",
-};
-
-const CONDITION_COLOR: Record<string, string> = {
-  상: "bg-green-100 text-green-700",
-  중: "bg-yellow-100 text-yellow-700",
-  하: "bg-red-100 text-red-700",
 };
 
 /* ── 헬퍼 ── */
@@ -108,7 +95,7 @@ export default function MedicineInspectionPage() {
     const { data, error } = await supabase
       .from("medicines")
       .select(
-        `id, drug_id, seller_id, quantity, expiry_date, is_opened, condition, image_urls, status, created_at, drugs_Fe(product_code, product_name, company_name, max_price, unit)`,
+        `id, drug_id, seller_id, quantity, expiry_date, is_opened, image_urls, status, created_at, drugs_Fe(product_code, product_name, company_name, max_price, unit)`,
       )
       .order("created_at", { ascending: false });
 
@@ -561,14 +548,6 @@ function DetailModal({
             >
               {medicine.is_opened}
             </span>
-            <span
-              className={`text-xs font-medium px-2.5 py-1 rounded-full ${
-                CONDITION_COLOR[medicine.condition] ??
-                "bg-gray-100 text-gray-600"
-              }`}
-            >
-              {CONDITION_LABEL[medicine.condition] ?? medicine.condition}
-            </span>
           </div>
 
           {/* 약품명 */}
@@ -601,10 +580,6 @@ function DetailModal({
               value={formatDate(medicine.expiry_date)}
             />
             <InfoRow label="개봉 여부" value={medicine.is_opened} />
-            <InfoRow
-              label="상태"
-              value={CONDITION_LABEL[medicine.condition] ?? medicine.condition}
-            />
             <InfoRow label="등록 약국" value={pharmacyName ?? "-"} />
             <InfoRow label="등록일" value={formatDate(medicine.created_at)} />
           </div>

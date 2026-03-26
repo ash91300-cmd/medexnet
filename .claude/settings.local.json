@@ -19,7 +19,16 @@
       "mcp__supabase__get_advisors",
       "Bash(npx next dev)",
       "mcp__supabase__execute_sql",
-      "mcp__supabase__list_migrations"
+      "mcp__supabase__list_migrations",
+      "Bash(npx next dev:*)",
+      "Bash(taskkill:*)",
+      "mcp__supabase__deploy_edge_function",
+      "Bash(for commit in 3c91804 008262b 546b7d8 f040aaa 97c51b7 3944379 22aa943 21c286d)",
+      "Bash(do echo \"=== $commit ===\")",
+      "Bash(done)",
+      "Bash(npm install:*)",
+      "mcp__supabase__list_extensions",
+      "Bash(netstat:*)"
     ],
     "deny": [],
     "ask": []

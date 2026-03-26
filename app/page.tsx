@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import LandingPage from "@/components/LandingPage";
 import Dashboard from "@/components/Dashboard";
@@ -9,7 +10,15 @@ import VerificationModal from "@/components/VerificationModal";
 
 function HomeContent() {
   const { user, profile, loading } = useAuth();
+  const router = useRouter();
   const [showModal, setShowModal] = useState(false);
+
+  // 관리자는 /admin으로 리다이렉트
+  useEffect(() => {
+    if (!loading && user && profile?.role === "admin") {
+      router.replace("/admin");
+    }
+  }, [loading, user, profile, router]);
 
   // 초기 로딩 또는 로그인은 됐는데 프로필 아직 로드 중
   if (loading || (user && !profile)) {
@@ -23,6 +32,15 @@ function HomeContent() {
   // 비로그인 → 랜딩페이지
   if (!user) {
     return <LandingPage />;
+  }
+
+  // 관리자 리다이렉트 대기
+  if (profile?.role === "admin") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
   }
 
   // 로그인 + 인증 완료 → 대시보드
