@@ -28,7 +28,9 @@
       "Bash(done)",
       "Bash(npm install:*)",
       "mcp__supabase__list_extensions",
-      "Bash(netstat:*)"
+      "Bash(netstat:*)",
+      "Bash(xargs:*)",
+      "Bash(npm run dev:*)"
     ],
     "deny": [],
     "ask": []

@@ -22,4 +22,9 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+  .stagger-1 { animation-delay: 0ms; }
+  .stagger-2 { animation-delay: 150ms; }
+  .stagger-3 { animation-delay: 300ms; }
+  .stagger-4 { animation-delay: 450ms; }
+  .scroll-hidden { opacity: 0; }
 }
