@@ -76,7 +76,7 @@ export default function CheckoutPage() {
     <Suspense
       fallback={
         <div className="min-h-screen flex items-center justify-center bg-white">
-          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-4 border-sky-500 border-t-transparent rounded-full animate-spin" />
         </div>
       }
     >
@@ -362,10 +362,10 @@ function CheckoutContent() {
   /* -- 로딩 -- */
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gradient-to-b from-sky-50/30 to-white">
         <Navbar />
         <div className="flex justify-center py-20">
-          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-4 border-sky-500 border-t-transparent rounded-full animate-spin" />
         </div>
       </div>
     );
@@ -387,7 +387,7 @@ function CheckoutContent() {
 
   /* -- 결제 페이지 -- */
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-b from-sky-50/30 to-white">
       {/* 토스트 */}
       {toast && (
         <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[100] animate-fade-in">
@@ -434,7 +434,7 @@ function CheckoutContent() {
 
       <Navbar />
 
-      <main className="max-w-4xl mx-auto px-6 py-10">
+      <main className="max-w-4xl mx-auto px-6 py-10 page-enter">
         {/* 헤더 */}
         <h1 className="text-2xl font-bold text-gray-900 mb-8">주문 / 결제</h1>
 
@@ -639,7 +639,7 @@ function CheckoutContent() {
                   <span className="text-base font-bold text-gray-900">
                     총 결제 금액
                   </span>
-                  <span className="text-2xl font-bold text-blue-600">
+                  <span className="text-2xl font-bold text-sky-600">
                     {formatPrice(getTotalPrice())}원
                   </span>
                 </div>
@@ -650,7 +650,7 @@ function CheckoutContent() {
               type="button"
               onClick={handleOrder}
               disabled={submitting}
-              className="w-full h-12 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed text-white font-medium rounded-xl transition-colors text-base flex items-center justify-center gap-2"
+              className="w-full h-12 bg-sky-500 hover:bg-sky-600 disabled:bg-sky-300 disabled:cursor-not-allowed text-white font-medium rounded-xl transition-colors text-base flex items-center justify-center gap-2 shadow-lg shadow-sky-500/25"
             >
               {submitting ? (
                 <>

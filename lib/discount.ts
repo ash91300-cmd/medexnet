@@ -16,7 +16,7 @@
  *
  * [가격 구조]
  *  - 판매가 = 약가상한(max_price) × (1 - 할인율) → 구매 약국이 지불하는 금액
- *  - MedExNet 수수료 = 판매가 × 3%
+ *  - Medexnet 수수료 = 판매가 × 3%
  *  - 매입가 = 판매가 - 수수료 → 판매 약국이 수령하는 금액
  *
  * [택배비]
@@ -101,7 +101,7 @@ export function calculateSellingPrice(
 }
 
 /**
- * MedExNet 수수료 계산 (판매가 × 3%)
+ * Medexnet 수수료 계산 (판매가 × 3%)
  */
 export function calculateCommission(sellingPrice: number): number {
   return Math.round(sellingPrice * 0.03);

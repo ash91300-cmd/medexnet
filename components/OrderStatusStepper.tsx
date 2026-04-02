@@ -98,7 +98,7 @@ export default function OrderStatusStepper({
                     isCompleted
                       ? "bg-emerald-500 text-white"
                       : isCurrent
-                        ? "bg-blue-500 text-white ring-4 ring-blue-100"
+                        ? "bg-sky-500 text-white ring-4 ring-sky-100"
                         : "bg-gray-200 text-gray-400"
                   }`}
                 >
@@ -125,7 +125,7 @@ export default function OrderStatusStepper({
                     isCompleted
                       ? "text-emerald-600"
                       : isCurrent
-                        ? "text-blue-600"
+                        ? "text-sky-600"
                         : "text-gray-400"
                   }`}
                 >

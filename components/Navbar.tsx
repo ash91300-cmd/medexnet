@@ -30,7 +30,27 @@ export default function Navbar({ filter }: NavbarProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [query, setQuery] = useState(searchParams.get("search") ?? "");
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
+  const [pharmacyName, setPharmacyName] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user || profile?.verification_status !== "verified") {
+      setPharmacyName(null);
+      return;
+    }
+    async function fetchPharmacyName() {
+      const { data } = await supabase
+        .from("verification_requests")
+        .select("pharmacy_name")
+        .eq("user_id", user!.id)
+        .eq("status", "approved")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single();
+      if (data) setPharmacyName(data.pharmacy_name);
+    }
+    fetchPharmacyName();
+  }, [user, profile?.verification_status]);
 
   useEffect(() => {
     if (!user) {
@@ -108,12 +128,12 @@ export default function Navbar({ filter }: NavbarProps) {
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-transparent">
+      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-sky-100/60">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
           <Link href="/" className="flex items-center flex-shrink-0">
             <Image
               src="/logo.png"
-              alt="MedExNet"
+              alt="Medexnet"
               width={160}
               height={36}
               className="h-12 w-auto"
@@ -143,7 +163,7 @@ export default function Navbar({ filter }: NavbarProps) {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="약품명 또는 보험코드 검색"
-                  className="w-full pl-9 pr-9 py-2 bg-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+                  className="w-full pl-9 pr-9 py-2 bg-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:bg-white transition-all"
                 />
                 {query && (
                   <button
@@ -176,7 +196,7 @@ export default function Navbar({ filter }: NavbarProps) {
                 onClick={() => setShowFilter((v) => !v)}
                 className={`flex-shrink-0 inline-flex items-center gap-1.5 px-2 py-2 rounded-xl border text-sm font-medium transition-all ${
                   hasActiveFilter
-                    ? "bg-blue-50 border-blue-200 text-blue-700"
+                    ? "bg-sky-50 border-sky-200 text-sky-700"
                     : showFilter
                       ? "bg-gray-50 border-gray-300 text-gray-700"
                       : "bg-gray-100 border-transparent text-gray-600 hover:bg-gray-200"
@@ -196,7 +216,7 @@ export default function Navbar({ filter }: NavbarProps) {
                   />
                 </svg>
                 {hasActiveFilter && (
-                  <span className="min-w-[18px] h-[18px] bg-blue-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 leading-none">
+                  <span className="min-w-[18px] h-[18px] bg-sky-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 leading-none">
                     {activeFilterCount}
                   </span>
                 )}
@@ -205,45 +225,70 @@ export default function Navbar({ filter }: NavbarProps) {
           </div>
 
           <div className="flex items-center gap-4 flex-shrink-0">
+            {pharmacyName && (
+              <Link
+                href="/mypage/pharmacy"
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-700 text-sm font-medium rounded-xl hover:bg-emerald-100 transition-colors"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z"
+                  />
+                </svg>
+                {pharmacyName}
+              </Link>
+            )}
+
             <Link
               href="/register"
-              className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors hidden sm:block"
+              className="hidden sm:flex items-center gap-1 px-3 py-1.5 bg-pink-50 text-pink-700 text-sm font-medium rounded-xl hover:bg-pink-100 transition-colors"
             >
               약품등록
             </Link>
 
             <Link
               href="/cart"
-              className="relative w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
+              className="relative flex items-center gap-1 px-3 py-1.5 bg-sky-50 text-sky-700 text-sm font-medium rounded-xl hover:bg-sky-100 transition-colors"
               title="장바구니"
             >
-              <svg
-                className="w-5 h-5 text-gray-600"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={1.5}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-5.98.286h11.356m-9.982 0h9.982m0 0a3 3 0 105.98.286M7.5 14.25H5.25m0 0L3.756 5.272M7.5 14.25l1.689-8.978m6.561 8.978a3 3 0 105.98.286m-5.98-.286H20.25m0 0l-1.244-8.978M12.75 5.272h7.5"
-                />
-              </svg>
-              {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 leading-none">
-                  {cartCount > 99 ? "99+" : cartCount}
-                </span>
-              )}
+              <div className="relative">
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={1.5}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-5.98.286h11.356m-9.982 0h9.982m0 0a3 3 0 105.98.286M7.5 14.25H5.25m0 0L3.756 5.272M7.5 14.25l1.689-8.978m6.561 8.978a3 3 0 105.98.286m-5.98-.286H20.25m0 0l-1.244-8.978M12.75 5.272h7.5"
+                  />
+                </svg>
+                {cartCount > 0 && (
+                  <span className="absolute -top-2 -right-2 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 leading-none">
+                    {cartCount > 99 ? "99+" : cartCount}
+                  </span>
+                )}
+              </div>
+              장바구니
             </Link>
 
             <div className="relative">
               <button
                 onClick={() => setShowMenu((prev) => !prev)}
-                className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
+                className="flex items-center gap-1 px-3 py-1.5 bg-sky-50 text-sky-700 text-sm font-medium rounded-xl hover:bg-sky-100 transition-colors"
               >
                 <svg
-                  className="w-5 h-5 text-gray-600"
+                  className="w-5 h-5"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -255,6 +300,7 @@ export default function Navbar({ filter }: NavbarProps) {
                     d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
                   />
                 </svg>
+                마이페이지
               </button>
 
               {showMenu && (
@@ -275,7 +321,7 @@ export default function Navbar({ filter }: NavbarProps) {
       {filter && showFilter && (
         <div
           ref={filterRef}
-          className="sticky top-16 z-40 bg-white/95 backdrop-blur-md border-b border-gray-100 animate-fade-in-up"
+          className="sticky top-16 z-40 bg-white/95 backdrop-blur-md border-b border-sky-100/60 animate-fade-in-up"
         >
           <div className="max-w-6xl mx-auto px-6 py-3">
             <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
@@ -291,7 +337,7 @@ export default function Navbar({ filter }: NavbarProps) {
                       onClick={() => filter.setOpenedFilter(opt)}
                       className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
                         filter.openedFilter === opt
-                          ? "bg-blue-500 text-white"
+                          ? "bg-sky-500 text-white"
                           : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                       }`}
                     >
@@ -314,7 +360,7 @@ export default function Navbar({ filter }: NavbarProps) {
                         onClick={() => filter.setExpiryFilter(opt)}
                         className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
                           filter.expiryFilter === opt
-                            ? "bg-blue-500 text-white"
+                            ? "bg-sky-500 text-white"
                             : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                         }`}
                       >

@@ -34,7 +34,7 @@ export default function LoginPage() {
   if (authLoading || user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-sky-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -104,14 +104,14 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex flex-col">
+    <div className="min-h-screen bg-gradient-to-b from-sky-50/70 to-white flex flex-col">
       {/* Header */}
       <header className="py-6 px-6">
         <div className="max-w-6xl mx-auto">
           <Link href="/" className="flex items-center w-fit">
             <Image
               src="/logo.png"
-              alt="MedExNet"
+              alt="Medexnet"
               width={160}
               height={36}
               className="h-12 w-auto"
@@ -220,7 +220,7 @@ export default function LoginPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="example@pharmacy.com"
                     required
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all"
                   />
                 </div>
                 <div>
@@ -233,7 +233,7 @@ export default function LoginPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="6자 이상 입력해주세요"
                     required
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all"
                   />
                 </div>
                 {tab === "signup" && (
@@ -247,7 +247,7 @@ export default function LoginPage() {
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="비밀번호를 다시 입력해주세요"
                       required
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all"
                     />
                   </div>
                 )}
@@ -267,7 +267,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full mt-6 py-3 bg-blue-500 text-white font-semibold rounded-xl hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                className="w-full mt-6 py-3 bg-sky-500 text-white font-semibold rounded-xl hover:bg-sky-600 shadow-lg shadow-sky-500/25 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 {loading
                   ? "처리 중..."
@@ -279,7 +279,7 @@ export default function LoginPage() {
           </div>
 
           <p className="text-center text-xs text-gray-400 mt-6">
-            계속 진행하면 MedExNet의 이용약관 및 개인정보처리방침에 동의하는
+            계속 진행하면 Medexnet의 이용약관 및 개인정보처리방침에 동의하는
             것으로 간주합니다.
           </p>
         </div>

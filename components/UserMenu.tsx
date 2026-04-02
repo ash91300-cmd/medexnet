@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const STATUS_LABEL: Record<string, { text: string; color: string }> = {
   unverified: { text: "미인증", color: "bg-amber-100 text-amber-700" },
-  pending: { text: "심사 중", color: "bg-blue-100 text-blue-700" },
+  pending: { text: "심사 중", color: "bg-sky-100 text-sky-700" },
   verified: { text: "인증 완료", color: "bg-emerald-100 text-emerald-700" },
   rejected: { text: "반려", color: "bg-red-100 text-red-700" },
 };
@@ -134,7 +134,7 @@ export default function UserMenu({
         {canVerify && (
           <button
             onClick={onVerify}
-            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-blue-600 hover:bg-blue-50 transition-colors"
+            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-sky-600 hover:bg-sky-50 transition-colors"
           >
             <svg
               className="w-4 h-4"

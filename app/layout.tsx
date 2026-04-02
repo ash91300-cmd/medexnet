@@ -11,7 +11,7 @@ const notoSansKR = Noto_Sans_KR({
 });
 
 export const metadata: Metadata = {
-  title: "MedExNet - 약국 간 불용약품 거래 플랫폼",
+  title: "Medexnet - 약국 간 불용약품 거래 플랫폼",
   description:
     "검증된 약국 간 의약품 거래 플랫폼. 관리자 검수와 에스크로로 안전한 거래를 보장합니다.",
   icons: {

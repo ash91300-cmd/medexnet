@@ -47,7 +47,7 @@ const TYPE_CONFIG: Record<string, { label: string; color: string }> = {
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   open: { label: "접수", color: "bg-amber-100 text-amber-700" },
-  in_review: { label: "검토중", color: "bg-blue-100 text-blue-700" },
+  in_review: { label: "검토중", color: "bg-sky-100 text-sky-700" },
   resolved: { label: "해결", color: "bg-emerald-100 text-emerald-700" },
   closed: { label: "종료", color: "bg-gray-100 text-gray-600" },
 };
@@ -177,7 +177,7 @@ export default function DisputeManagementPage() {
   if (loading) {
     return (
       <div className="flex justify-center py-20">
-        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-sky-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -197,7 +197,7 @@ export default function DisputeManagementPage() {
             onClick={() => setFilter(tab.key)}
             className={`px-4 py-2 text-sm font-medium rounded-xl transition-colors ${
               filter === tab.key
-                ? "bg-blue-500 text-white"
+                ? "bg-sky-500 text-white"
                 : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
             }`}
           >
@@ -240,7 +240,7 @@ export default function DisputeManagementPage() {
                   onClick={() => setSelected(dispute)}
                   className={`w-full text-left bg-white rounded-2xl border p-4 transition-all hover:shadow-sm ${
                     isSelected
-                      ? "border-blue-300 ring-2 ring-blue-100"
+                      ? "border-sky-300 ring-2 ring-sky-100"
                       : "border-gray-100"
                   }`}
                 >
@@ -399,7 +399,7 @@ export default function DisputeManagementPage() {
                           )
                         }
                         disabled={processing}
-                        className="w-full py-3 bg-blue-500 text-white font-semibold rounded-xl hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        className="w-full py-3 bg-sky-500 text-white font-semibold rounded-xl hover:bg-sky-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >
                         {processing
                           ? "처리 중..."
@@ -446,7 +446,7 @@ function DisputeStatusStepper({ status }: { status: string }) {
                   isCompleted
                     ? "bg-emerald-500 text-white"
                     : isCurrent
-                      ? "bg-blue-500 text-white ring-4 ring-blue-100"
+                      ? "bg-sky-500 text-white ring-4 ring-sky-100"
                       : "bg-gray-200 text-gray-400"
                 }`}
               >
@@ -473,7 +473,7 @@ function DisputeStatusStepper({ status }: { status: string }) {
                   isCompleted
                     ? "text-emerald-600"
                     : isCurrent
-                      ? "text-blue-600"
+                      ? "text-sky-600"
                       : "text-gray-400"
                 }`}
               >

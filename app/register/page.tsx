@@ -49,7 +49,16 @@ function RegisterContent() {
   // --- 2단계: 상세 정보 ---
   const [quantity, setQuantity] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
+  const [expiryText, setExpiryText] = useState("");
   const [isOpened, setIsOpened] = useState("미개봉");
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [calView, setCalView] = useState<"days" | "months" | "years">("days");
+  const [calYear, setCalYear] = useState(new Date().getFullYear());
+  const [calMonth, setCalMonth] = useState(new Date().getMonth());
+  const [calYearRangeStart, setCalYearRangeStart] = useState(
+    Math.floor(new Date().getFullYear() / 12) * 12,
+  );
+  const calendarRef = useRef<HTMLDivElement>(null);
 
   // --- 3단계: 사진 업로드 ---
   const [photos, setPhotos] = useState<PhotoSlot[]>([
@@ -142,6 +151,12 @@ function RegisterContent() {
       ) {
         setShowDropdown(false);
       }
+      if (
+        calendarRef.current &&
+        !calendarRef.current.contains(e.target as Node)
+      ) {
+        setShowCalendar(false);
+      }
     }
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
@@ -160,6 +175,51 @@ function RegisterContent() {
     setSelectedDrug(null);
     setSearchQuery("");
     setSearchResults([]);
+  }
+
+  // 유통기한 텍스트 입력 (YYYY.MM.DD 자동 포맷)
+  function handleExpiryTextChange(raw: string) {
+    // 숫자만 추출
+    const digits = raw.replace(/\D/g, "").slice(0, 8);
+    let formatted = "";
+    if (digits.length <= 4) {
+      formatted = digits;
+    } else if (digits.length <= 6) {
+      formatted = digits.slice(0, 4) + "." + digits.slice(4);
+    } else {
+      formatted = digits.slice(0, 4) + "." + digits.slice(4, 6) + "." + digits.slice(6);
+    }
+    setExpiryText(formatted);
+
+    // 8자리 완성 시 내부 값 설정 (YYYY-MM-DD)
+    if (digits.length === 8) {
+      const y = digits.slice(0, 4);
+      const m = digits.slice(4, 6);
+      const d = digits.slice(6, 8);
+      setExpiryDate(`${y}-${m}-${d}`);
+      setErrors((prev) => ({ ...prev, expiryDate: "" }));
+    } else {
+      setExpiryDate("");
+    }
+  }
+
+  // 달력에서 날짜 선택
+  function handleCalendarSelect(year: number, month: number, day: number) {
+    const m = String(month + 1).padStart(2, "0");
+    const d = String(day).padStart(2, "0");
+    setExpiryDate(`${year}-${m}-${d}`);
+    setExpiryText(`${year}.${m}.${d}`);
+    setShowCalendar(false);
+    setErrors((prev) => ({ ...prev, expiryDate: "" }));
+  }
+
+  // 달력 유틸
+  function getDaysInMonth(year: number, month: number) {
+    return new Date(year, month + 1, 0).getDate();
+  }
+
+  function getFirstDayOfMonth(year: number, month: number) {
+    return new Date(year, month, 1).getDay();
   }
 
   // 사진 선택
@@ -231,6 +291,9 @@ function RegisterContent() {
     setSearchResults([]);
     setQuantity("");
     setExpiryDate("");
+    setExpiryText("");
+    setShowCalendar(false);
+    setCalView("days");
     setIsOpened("미개봉");
     setPhotos([
       {
@@ -327,14 +390,14 @@ function RegisterContent() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-sky-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-sky-50/30 to-white">
         <div className="text-center">
           <h2 className="text-xl font-bold text-gray-900 mb-2">
             로그인이 필요합니다
@@ -344,7 +407,7 @@ function RegisterContent() {
           </p>
           <Link
             href="/auth"
-            className="px-6 py-2.5 bg-blue-500 text-white text-sm font-semibold rounded-xl hover:bg-blue-600 transition-colors"
+            className="px-6 py-2.5 bg-sky-500 text-white text-sm font-semibold rounded-xl hover:bg-sky-600 transition-colors"
           >
             로그인하기
           </Link>
@@ -357,9 +420,9 @@ function RegisterContent() {
 
   if (!isVerified) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gradient-to-b from-sky-50/30 to-white">
         <Navbar />
-        <main className="max-w-3xl mx-auto px-6 py-10">
+        <main className="max-w-3xl mx-auto px-6 py-10 page-enter">
           <div className="text-center py-20 bg-white rounded-2xl border border-gray-100">
             <div className="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <svg
@@ -384,7 +447,7 @@ function RegisterContent() {
             </p>
             <Link
               href="/"
-              className="px-6 py-2.5 bg-blue-500 text-white text-sm font-semibold rounded-xl hover:bg-blue-600 transition-colors"
+              className="px-6 py-2.5 bg-sky-500 text-white text-sm font-semibold rounded-xl hover:bg-sky-600 transition-colors"
             >
               메인으로 돌아가기
             </Link>
@@ -396,7 +459,7 @@ function RegisterContent() {
 
   // --- 메인 폼 ---
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-b from-sky-50/30 to-white">
       {/* 토스트 */}
       {toast && (
         <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[100] animate-fade-in">
@@ -443,7 +506,7 @@ function RegisterContent() {
 
       <Navbar />
 
-      <main className="max-w-2xl mx-auto px-6 py-10">
+      <main className="max-w-2xl mx-auto px-6 py-10 page-enter">
         {/* 헤더 */}
         <h1 className="text-2xl font-bold text-gray-900 mb-8">약품 등록</h1>
 
@@ -455,9 +518,9 @@ function RegisterContent() {
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${
                     i < step
-                      ? "bg-blue-500 text-white"
+                      ? "bg-sky-500 text-white"
                       : i === step
-                        ? "bg-blue-500 text-white"
+                        ? "bg-sky-500 text-white"
                         : "bg-gray-200 text-gray-500"
                   }`}
                 >
@@ -492,7 +555,7 @@ function RegisterContent() {
           {/* 프로그레스 바 */}
           <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
             <div
-              className="h-full bg-blue-500 rounded-full transition-all duration-500 ease-out"
+              className="h-full bg-sky-500 rounded-full transition-all duration-500 ease-out"
               style={{ width: `${((step + 1) / STEPS.length) * 100}%` }}
             />
           </div>
@@ -523,11 +586,11 @@ function RegisterContent() {
                       if (selectedDrug) handleClearDrug();
                     }}
                     placeholder="약품명 또는 보험코드를 입력하세요"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent pr-10"
                   />
                   {searching && (
                     <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                      <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                      <div className="w-5 h-5 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" />
                     </div>
                   )}
                   {selectedDrug && (
@@ -562,7 +625,7 @@ function RegisterContent() {
                       <button
                         key={drug.product_code}
                         onClick={() => handleSelectDrug(drug)}
-                        className="w-full text-left px-4 py-3 hover:bg-blue-50 transition-colors border-b border-gray-50 last:border-b-0"
+                        className="w-full text-left px-4 py-3 hover:bg-sky-50 transition-colors border-b border-gray-50 last:border-b-0"
                       >
                         <p className="text-sm font-medium text-gray-900 truncate">
                           {drug.product_name}
@@ -589,39 +652,37 @@ function RegisterContent() {
 
               {/* 선택된 약품 정보 */}
               {selectedDrug && (
-                <div className="mt-6 p-4 bg-blue-50 rounded-xl border border-blue-100">
-                  <h3 className="text-sm font-bold text-blue-900 mb-3">
+                <div className="mt-6 p-5 bg-sky-50 rounded-xl border border-sky-100">
+                  <h3 className="text-sm font-bold text-sky-900 mb-4">
                     선택된 약품 정보
                   </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-3 gap-y-4 gap-x-6">
                     <div>
-                      <p className="text-xs text-blue-600 mb-0.5">보험코드</p>
+                      <p className="text-xs text-sky-600 mb-1">보험코드</p>
                       <p className="text-sm font-semibold text-gray-900">
                         {selectedDrug.product_code}
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-blue-600 mb-0.5">제조사</p>
+                      <p className="text-xs text-sky-600 mb-1">제조사</p>
                       <p className="text-sm font-semibold text-gray-900">
                         {selectedDrug.company_name}
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-blue-600 mb-0.5">상한가</p>
+                      <p className="text-xs text-sky-600 mb-1">상한가</p>
                       <p className="text-sm font-semibold text-gray-900">
                         {selectedDrug.max_price}원
                       </p>
                     </div>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
                     <div>
-                      <p className="text-xs text-blue-600 mb-0.5">단위</p>
+                      <p className="text-xs text-sky-600 mb-1">단위</p>
                       <p className="text-sm font-semibold text-gray-900">
                         {selectedDrug.unit}
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-blue-600 mb-0.5">구분</p>
+                      <p className="text-xs text-sky-600 mb-1">구분</p>
                       <p className="text-sm font-semibold text-gray-900">
                         {selectedDrug["OTC,ETC"]}
                       </p>
@@ -649,15 +710,16 @@ function RegisterContent() {
                     수량
                   </label>
                   <input
-                    type="number"
-                    min="1"
+                    type="text"
+                    inputMode="numeric"
                     value={quantity}
                     onChange={(e) => {
-                      setQuantity(e.target.value);
+                      const v = e.target.value.replace(/\D/g, "");
+                      setQuantity(v);
                       setErrors((prev) => ({ ...prev, quantity: "" }));
                     }}
                     placeholder="수량을 입력하세요"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                   />
                   {errors.quantity && (
                     <p className="text-red-500 text-xs mt-1">
@@ -667,19 +729,233 @@ function RegisterContent() {
                 </div>
 
                 {/* 유통기한 */}
-                <div>
+                <div ref={calendarRef} className="relative">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     유통기한
                   </label>
-                  <input
-                    type="date"
-                    value={expiryDate}
-                    onChange={(e) => {
-                      setExpiryDate(e.target.value);
-                      setErrors((prev) => ({ ...prev, expiryDate: "" }));
-                    }}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={expiryText}
+                      onChange={(e) => handleExpiryTextChange(e.target.value)}
+                      placeholder="예) 2026.03.11"
+                      className="w-full px-4 py-3 pr-12 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => { setShowCalendar((v) => !v); setCalView("days"); }}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-sky-500 transition-colors"
+                    >
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5m-9-6h.008v.008H12v-.008zM12 15h.008v.008H12V15zm0 2.25h.008v.008H12v-.008zM9.75 15h.008v.008H9.75V15zm0 2.25h.008v.008H9.75v-.008zM7.5 15h.008v.008H7.5V15zm0 2.25h.008v.008H7.5v-.008zm6.75-4.5h.008v.008h-.008v-.008zm0 2.25h.008v.008h-.008V15zm0 2.25h.008v.008h-.008v-.008zm2.25-4.5h.008v.008H16.5v-.008zm0 2.25h.008v.008H16.5V15z" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  {/* 커스텀 달력 드롭다운 */}
+                  {showCalendar && (
+                    <div className="absolute z-20 mt-2 w-full bg-white border border-gray-200 rounded-xl shadow-xl p-4">
+                      {/* ── 년도 선택 뷰 ── */}
+                      {calView === "years" && (
+                        <>
+                          <div className="flex items-center justify-between mb-3">
+                            <button
+                              type="button"
+                              onClick={() => setCalYearRangeStart((s) => s - 12)}
+                              className="p-1 rounded-lg hover:bg-gray-100 text-gray-500"
+                            >
+                              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                              </svg>
+                            </button>
+                            <span className="text-sm font-semibold text-gray-800">
+                              {calYearRangeStart} – {calYearRangeStart + 11}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setCalYearRangeStart((s) => s + 12)}
+                              className="p-1 rounded-lg hover:bg-gray-100 text-gray-500"
+                            >
+                              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                              </svg>
+                            </button>
+                          </div>
+                          <div className="grid grid-cols-3 gap-2">
+                            {Array.from({ length: 12 }).map((_, i) => {
+                              const y = calYearRangeStart + i;
+                              const isSelected = y === calYear;
+                              const isCurrent = y === new Date().getFullYear();
+                              return (
+                                <button
+                                  key={y}
+                                  type="button"
+                                  onClick={() => {
+                                    setCalYear(y);
+                                    setCalView("months");
+                                  }}
+                                  className={`py-2.5 text-sm rounded-lg transition-colors ${
+                                    isSelected
+                                      ? "bg-sky-500 text-white font-semibold"
+                                      : isCurrent
+                                        ? "bg-sky-50 text-sky-600 font-medium"
+                                        : "text-gray-700 hover:bg-gray-100"
+                                  }`}
+                                >
+                                  {y}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </>
+                      )}
+
+                      {/* ── 월 선택 뷰 ── */}
+                      {calView === "months" && (
+                        <>
+                          <div className="flex items-center justify-between mb-3">
+                            <button
+                              type="button"
+                              onClick={() => setCalYear((y) => y - 1)}
+                              className="p-1 rounded-lg hover:bg-gray-100 text-gray-500"
+                            >
+                              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                              </svg>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setCalYearRangeStart(Math.floor(calYear / 12) * 12);
+                                setCalView("years");
+                              }}
+                              className="text-sm font-semibold text-gray-800 hover:text-sky-600 transition-colors"
+                            >
+                              {calYear}년
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setCalYear((y) => y + 1)}
+                              className="p-1 rounded-lg hover:bg-gray-100 text-gray-500"
+                            >
+                              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                              </svg>
+                            </button>
+                          </div>
+                          <div className="grid grid-cols-3 gap-2">
+                            {Array.from({ length: 12 }).map((_, i) => {
+                              const isSelected = i === calMonth && calYear === new Date().getFullYear();
+                              const isCurrent = i === new Date().getMonth() && calYear === new Date().getFullYear();
+                              return (
+                                <button
+                                  key={i}
+                                  type="button"
+                                  onClick={() => {
+                                    setCalMonth(i);
+                                    setCalView("days");
+                                  }}
+                                  className={`py-2.5 text-sm rounded-lg transition-colors ${
+                                    calMonth === i
+                                      ? "bg-sky-500 text-white font-semibold"
+                                      : isCurrent
+                                        ? "bg-sky-50 text-sky-600 font-medium"
+                                        : "text-gray-700 hover:bg-gray-100"
+                                  }`}
+                                >
+                                  {i + 1}월
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </>
+                      )}
+
+                      {/* ── 일 선택 뷰 ── */}
+                      {calView === "days" && (
+                        <>
+                          <div className="flex items-center justify-between mb-3">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (calMonth === 0) { setCalMonth(11); setCalYear((y) => y - 1); }
+                                else setCalMonth((m) => m - 1);
+                              }}
+                              className="p-1 rounded-lg hover:bg-gray-100 text-gray-500"
+                            >
+                              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                              </svg>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setCalView("months")}
+                              className="text-sm font-semibold text-gray-800 hover:text-sky-600 transition-colors"
+                            >
+                              {calYear}년 {calMonth + 1}월
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (calMonth === 11) { setCalMonth(0); setCalYear((y) => y + 1); }
+                                else setCalMonth((m) => m + 1);
+                              }}
+                              className="p-1 rounded-lg hover:bg-gray-100 text-gray-500"
+                            >
+                              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                              </svg>
+                            </button>
+                          </div>
+
+                          {/* 요일 헤더 */}
+                          <div className="grid grid-cols-7 mb-1">
+                            {["일", "월", "화", "수", "목", "금", "토"].map((d) => (
+                              <div key={d} className="text-center text-xs font-medium text-gray-400 py-1">
+                                {d}
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* 날짜 그리드 */}
+                          <div className="grid grid-cols-7">
+                            {Array.from({ length: getFirstDayOfMonth(calYear, calMonth) }).map((_, i) => (
+                              <div key={`empty-${i}`} />
+                            ))}
+                            {Array.from({ length: getDaysInMonth(calYear, calMonth) }).map((_, i) => {
+                              const day = i + 1;
+                              const m = String(calMonth + 1).padStart(2, "0");
+                              const d = String(day).padStart(2, "0");
+                              const isSelected = expiryDate === `${calYear}-${m}-${d}`;
+                              const today = new Date();
+                              const isToday =
+                                calYear === today.getFullYear() &&
+                                calMonth === today.getMonth() &&
+                                day === today.getDate();
+                              return (
+                                <button
+                                  key={day}
+                                  type="button"
+                                  onClick={() => handleCalendarSelect(calYear, calMonth, day)}
+                                  className={`py-1.5 text-sm rounded-lg transition-colors ${
+                                    isSelected
+                                      ? "bg-sky-500 text-white font-semibold"
+                                      : isToday
+                                        ? "bg-sky-50 text-sky-600 font-medium"
+                                        : "text-gray-700 hover:bg-gray-100"
+                                  }`}
+                                >
+                                  {day}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
+
                   {errors.expiryDate && (
                     <p className="text-red-500 text-xs mt-1">
                       {errors.expiryDate}
@@ -700,7 +976,7 @@ function RegisterContent() {
                         onClick={() => setIsOpened(opt)}
                         className={`py-3 rounded-xl text-sm font-medium border-2 transition-colors ${
                           isOpened === opt
-                            ? "border-blue-500 bg-blue-50 text-blue-700"
+                            ? "border-sky-500 bg-sky-50 text-sky-700"
                             : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
                         }`}
                       >
@@ -758,7 +1034,7 @@ function RegisterContent() {
                         />
                       </div>
                     ) : (
-                      <label className="flex flex-col items-center justify-center w-full h-36 border-2 border-dashed border-gray-200 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors">
+                      <label className="flex flex-col items-center justify-center w-full h-36 border-2 border-dashed border-gray-200 rounded-lg cursor-pointer hover:border-sky-400 hover:bg-sky-50 transition-colors">
                         <svg
                           className="w-8 h-8 text-gray-400 mb-2"
                           fill="none"
@@ -821,7 +1097,7 @@ function RegisterContent() {
             {step < STEPS.length - 1 ? (
               <button
                 onClick={handleNext}
-                className="px-6 py-2.5 text-sm font-semibold text-white bg-blue-500 rounded-xl hover:bg-blue-600 transition-colors"
+                className="px-6 py-2.5 text-sm font-semibold text-white bg-sky-500 rounded-xl hover:bg-sky-600 shadow-lg shadow-sky-500/25 transition-colors"
               >
                 다음
               </button>
@@ -829,7 +1105,7 @@ function RegisterContent() {
               <button
                 onClick={handleSubmit}
                 disabled={submitting}
-                className="px-8 py-2.5 text-sm font-semibold text-white bg-blue-500 rounded-xl hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="px-8 py-2.5 text-sm font-semibold text-white bg-sky-500 rounded-xl hover:bg-sky-600 shadow-lg shadow-sky-500/25 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 {submitting && (
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -849,7 +1125,7 @@ export default function RegisterPage() {
     <Suspense
       fallback={
         <div className="min-h-screen flex items-center justify-center bg-white">
-          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-4 border-sky-500 border-t-transparent rounded-full animate-spin" />
         </div>
       }
     >

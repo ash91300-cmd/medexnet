@@ -34,8 +34,8 @@ const STATUS_CONFIG = {
     label: "심사 중",
     description:
       "약사 인증 서류가 제출되었습니다. 관리자 심사가 완료될 때까지 잠시 기다려주세요.",
-    color: "bg-blue-50 border-blue-200 text-blue-800",
-    iconColor: "text-blue-500",
+    color: "bg-sky-50 border-sky-200 text-sky-800",
+    iconColor: "text-sky-500",
     icon: (
       <svg
         className="w-6 h-6"
@@ -110,7 +110,7 @@ export default function Dashboard() {
   const config = STATUS_CONFIG[status];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-b from-sky-50/30 to-white">
       <Navbar
         filter={{
           openedFilter,
@@ -120,7 +120,7 @@ export default function Dashboard() {
         }}
       />
 
-      <main className="max-w-6xl mx-auto px-6 py-10">
+      <main className="max-w-6xl mx-auto px-6 py-10 page-enter">
         {/* Verification Status Banner */}
         {status !== "verified" && (
           <div

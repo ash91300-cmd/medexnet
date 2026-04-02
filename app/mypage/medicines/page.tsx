@@ -68,7 +68,7 @@ export default function MyMedicinesPage() {
     <Suspense
       fallback={
         <div className="min-h-screen flex items-center justify-center bg-white">
-          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-4 border-sky-500 border-t-transparent rounded-full animate-spin" />
         </div>
       }
     >
@@ -148,10 +148,10 @@ function MyMedicinesContent() {
   /* ── 로딩 / 비로그인 ── */
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gradient-to-b from-sky-50/30 to-white">
         <Navbar />
         <div className="flex justify-center py-20">
-          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-4 border-sky-500 border-t-transparent rounded-full animate-spin" />
         </div>
       </div>
     );
@@ -161,9 +161,9 @@ function MyMedicinesContent() {
 
   /* ── 렌더 ── */
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-b from-sky-50/30 to-white">
       <Navbar />
-      <main className="max-w-4xl mx-auto px-6 py-10">
+      <main className="max-w-4xl mx-auto px-6 py-10 page-enter">
         <Link href="/mypage" className="text-sm text-gray-500 hover:text-gray-700 transition-colors">
           &larr; 마이페이지로 돌아가기
         </Link>
@@ -185,7 +185,7 @@ function MyMedicinesContent() {
             <p className="text-sm text-gray-500 mb-6">약품을 등록하여 판매를 시작해보세요.</p>
             <Link
               href="/register"
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-xl transition-colors"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-sky-500 hover:bg-sky-600 text-white text-sm font-medium rounded-xl transition-colors shadow-lg shadow-sky-500/25"
             >
               약품 등록하기
             </Link>
@@ -257,7 +257,7 @@ function MyMedicinesContent() {
                   <div className="flex border-t border-gray-100">
                     <button
                       onClick={() => setEditTarget(med)}
-                      className="flex-1 py-3 text-sm font-medium text-blue-600 hover:bg-blue-50 transition-colors"
+                      className="flex-1 py-3 text-sm font-medium text-sky-600 hover:bg-sky-50 transition-colors"
                     >
                       수정
                     </button>
@@ -456,8 +456,8 @@ function EditModal({
 
         <div className="px-6 py-5 space-y-6 max-h-[70vh] overflow-y-auto">
           {/* 약품 정보 (읽기 전용) */}
-          <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
-            <h3 className="text-sm font-bold text-blue-900 mb-2">선택된 약품</h3>
+          <div className="p-4 bg-sky-50 rounded-xl border border-sky-100">
+            <h3 className="text-sm font-bold text-sky-900 mb-2">선택된 약품</h3>
             <p className="text-sm font-semibold text-gray-900">{drug?.product_name ?? "-"}</p>
             <p className="text-xs text-gray-600 mt-0.5">
               {drug?.company_name ?? "-"} · 코드: {drug?.product_code ?? "-"} · 상한가: {drug?.max_price ?? "-"}원
@@ -472,7 +472,7 @@ function EditModal({
               min="1"
               value={quantity}
               onChange={(e) => { setQuantity(e.target.value); setErrors((p) => ({ ...p, quantity: "" })); }}
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
             />
             {errors.quantity && <p className="text-red-500 text-xs mt-1">{errors.quantity}</p>}
           </div>
@@ -484,7 +484,7 @@ function EditModal({
               type="date"
               value={expiryDate}
               onChange={(e) => { setExpiryDate(e.target.value); setErrors((p) => ({ ...p, expiryDate: "" })); }}
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
             />
             {errors.expiryDate && <p className="text-red-500 text-xs mt-1">{errors.expiryDate}</p>}
           </div>
@@ -500,7 +500,7 @@ function EditModal({
                   onClick={() => setIsOpened(opt)}
                   className={`py-3 rounded-xl text-sm font-medium border-2 transition-colors ${
                     isOpened === opt
-                      ? "border-blue-500 bg-blue-50 text-blue-700"
+                      ? "border-sky-500 bg-sky-50 text-sky-700"
                       : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
                   }`}
                 >
@@ -545,7 +545,7 @@ function EditModal({
                       )}
                     </div>
                   ) : (
-                    <label className="flex flex-col items-center justify-center w-full h-36 border-2 border-dashed border-gray-200 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors">
+                    <label className="flex flex-col items-center justify-center w-full h-36 border-2 border-dashed border-gray-200 rounded-lg cursor-pointer hover:border-sky-400 hover:bg-sky-50 transition-colors">
                       <svg className="w-8 h-8 text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M6.75 7.5h.008v.008H6.75V7.5zM6.75 7.5a1.5 1.5 0 10-3 0 1.5 1.5 0 003 0z" />
                       </svg>
@@ -589,7 +589,7 @@ function EditModal({
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex-1 py-2.5 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 disabled:opacity-50 rounded-xl transition-colors flex items-center justify-center gap-2"
+            className="flex-1 py-2.5 text-sm font-medium text-white bg-sky-500 hover:bg-sky-600 disabled:opacity-50 rounded-xl transition-colors flex items-center justify-center gap-2"
           >
             {saving && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
             {saving ? "저장 중..." : "저장"}

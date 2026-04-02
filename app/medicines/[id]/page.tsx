@@ -218,10 +218,10 @@ export default function MedicineDetailPage() {
   /* -- 로딩 -- */
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gradient-to-b from-sky-50/30 to-white">
         <Navbar />
         <div className="flex justify-center py-20">
-          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-4 border-sky-500 border-t-transparent rounded-full animate-spin" />
         </div>
       </div>
     );
@@ -230,9 +230,9 @@ export default function MedicineDetailPage() {
   /* -- 404 -- */
   if (!medicine) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gradient-to-b from-sky-50/30 to-white">
         <Navbar />
-        <main className="max-w-4xl mx-auto px-6 py-10">
+        <main className="max-w-4xl mx-auto px-6 py-10 page-enter">
           <div className="text-center py-20 bg-white rounded-2xl border border-gray-100">
             <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <svg
@@ -257,7 +257,7 @@ export default function MedicineDetailPage() {
             </p>
             <Link
               href="/"
-              className="text-blue-500 hover:text-blue-600 font-medium text-sm"
+              className="text-sky-500 hover:text-sky-600 font-medium text-sm"
             >
               목록으로 돌아가기
             </Link>
@@ -293,7 +293,7 @@ export default function MedicineDetailPage() {
   ).padStart(2, "0")}.${String(expiryDate.getDate()).padStart(2, "0")}`;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-b from-sky-50/30 to-white">
       {/* 토스트 */}
       {toast && (
         <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[100] animate-fade-in">
@@ -340,7 +340,7 @@ export default function MedicineDetailPage() {
 
       <Navbar />
 
-      <main className="max-w-4xl mx-auto px-6 py-10">
+      <main className="max-w-4xl mx-auto px-6 py-10 page-enter">
         {/* 뒤로가기 */}
         <Link
           href="/"
@@ -403,7 +403,7 @@ export default function MedicineDetailPage() {
                       onClick={() => setSelectedImage(idx)}
                       className={`relative w-16 h-16 rounded-lg overflow-hidden border-2 transition-colors ${
                         selectedImage === idx
-                          ? "border-blue-500"
+                          ? "border-sky-500"
                           : "border-gray-200 hover:border-gray-300"
                       }`}
                     >
@@ -427,7 +427,7 @@ export default function MedicineDetailPage() {
                 <span
                   className={`text-xs font-medium px-2.5 py-1 rounded-full ${
                     medicine.is_opened === "미개봉"
-                      ? "bg-blue-100 text-blue-700"
+                      ? "bg-sky-100 text-sky-700"
                       : "bg-orange-100 text-orange-700"
                   }`}
                 >
@@ -481,7 +481,7 @@ export default function MedicineDetailPage() {
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-500">매입가 (판매약국 수령)</span>
-                        <span className="font-medium text-blue-600">
+                        <span className="font-medium text-sky-600">
                           {formatPrice(purchasePrice)}원
                         </span>
                       </div>
@@ -612,7 +612,7 @@ export default function MedicineDetailPage() {
                     type="button"
                     onClick={handleAddToCart}
                     disabled={addingToCart}
-                    className="flex-1 flex items-center justify-center gap-2 h-10 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white text-sm font-medium rounded-xl transition-colors"
+                    className="flex-1 flex items-center justify-center gap-2 h-10 bg-sky-500 hover:bg-sky-600 disabled:bg-sky-300 text-white text-sm font-medium rounded-xl shadow-lg shadow-sky-500/25 transition-colors"
                   >
                     {addingToCart ? (
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />

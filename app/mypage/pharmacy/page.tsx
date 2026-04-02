@@ -9,7 +9,7 @@ import Navbar from "@/components/Navbar";
 
 const STATUS_LABEL: Record<string, { text: string; color: string }> = {
   unverified: { text: "미인증", color: "bg-amber-100 text-amber-700" },
-  pending: { text: "심사 중", color: "bg-blue-100 text-blue-700" },
+  pending: { text: "심사 중", color: "bg-sky-100 text-sky-700" },
   verified: { text: "인증 완료", color: "bg-emerald-100 text-emerald-700" },
   rejected: { text: "반려", color: "bg-red-100 text-red-700" },
 };
@@ -17,8 +17,17 @@ const STATUS_LABEL: Record<string, { text: string; color: string }> = {
 interface VerificationData {
   pharmacy_name: string;
   pharmacist_name: string;
+  license_number: string | null;
+  business_number: string | null;
   phone: string;
   address: string;
+}
+
+function formatBusinessNumber(num: string): string {
+  if (!num) return "-";
+  const digits = num.replace(/\D/g, "");
+  if (digits.length !== 10) return num;
+  return `${digits.slice(0, 3)}-${digits.slice(3, 5)}-${digits.slice(5)}`;
 }
 
 function formatDate(dateStr: string): string {
@@ -35,7 +44,7 @@ export default function PharmacyPage() {
     <Suspense
       fallback={
         <div className="min-h-screen flex items-center justify-center bg-white">
-          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-4 border-sky-500 border-t-transparent rounded-full animate-spin" />
         </div>
       }
     >
@@ -72,7 +81,7 @@ function PharmacyContent() {
 
       const { data, error } = await supabase
         .from("verification_requests")
-        .select("pharmacy_name, pharmacist_name, phone, address")
+        .select("pharmacy_name, pharmacist_name, license_number, business_number, phone, address")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
         .limit(1)
@@ -145,10 +154,10 @@ function PharmacyContent() {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gradient-to-b from-sky-50/30 to-white">
         <Navbar />
         <div className="flex justify-center py-20">
-          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-4 border-sky-500 border-t-transparent rounded-full animate-spin" />
         </div>
       </div>
     );
@@ -158,7 +167,7 @@ function PharmacyContent() {
 
   if (!verification) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gradient-to-b from-sky-50/30 to-white">
         <Navbar />
         <main className="max-w-3xl mx-auto px-6 py-10">
           <Link href="/mypage" className="text-sm text-gray-500 hover:text-gray-700 transition-colors">
@@ -175,7 +184,7 @@ function PharmacyContent() {
             <p className="text-sm text-gray-500 mb-6">약사 인증을 먼저 진행해주세요.</p>
             <Link
               href="/"
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-xl transition-colors"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-sky-500 hover:bg-sky-600 text-white text-sm font-medium rounded-xl transition-colors"
             >
               홈으로 이동
             </Link>
@@ -189,6 +198,8 @@ function PharmacyContent() {
     { label: "이메일", value: user.email ?? "-", editable: false },
     { label: "약국명", value: verification.pharmacy_name, editable: false },
     { label: "대표 약사명", value: verification.pharmacist_name, editable: false },
+    { label: "약사면허번호", value: verification.license_number ?? "-", editable: false },
+    { label: "사업자등록번호", value: verification.business_number ? formatBusinessNumber(verification.business_number) : "-", editable: false },
     {
       label: "연락처",
       value: verification.phone,
@@ -205,9 +216,9 @@ function PharmacyContent() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-b from-sky-50/30 to-white">
       <Navbar />
-      <main className="max-w-3xl mx-auto px-6 py-10">
+      <main className="max-w-3xl mx-auto px-6 py-10 page-enter">
         <Link href="/mypage" className="text-sm text-gray-500 hover:text-gray-700 transition-colors">
           &larr; 마이페이지로 돌아가기
         </Link>
@@ -217,7 +228,7 @@ function PharmacyContent() {
           {!editing ? (
             <button
               onClick={handleEdit}
-              className="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors"
+              className="px-4 py-2 text-sm font-medium text-sky-600 bg-sky-50 hover:bg-sky-100 rounded-xl transition-colors"
             >
               수정
             </button>
@@ -232,7 +243,7 @@ function PharmacyContent() {
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 disabled:opacity-50 rounded-xl transition-colors"
+                className="px-4 py-2 text-sm font-medium text-white bg-sky-500 hover:bg-sky-600 disabled:opacity-50 rounded-xl transition-colors"
               >
                 {saving ? "저장 중..." : "저장"}
               </button>
@@ -261,7 +272,7 @@ function PharmacyContent() {
                     onChange={(e) =>
                       setEditForm((prev) => ({ ...prev, [row.field!]: e.target.value }))
                     }
-                    className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                   />
                 ) : (
                   <span className="text-sm text-gray-900">{row.value}</span>

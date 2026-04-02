@@ -13,6 +13,10 @@ export default function VerificationModal({
   const { user, refreshProfile } = useAuth();
   const [pharmacyName, setPharmacyName] = useState("");
   const [pharmacistName, setPharmacistName] = useState("");
+  const [licenseNumber, setLicenseNumber] = useState("");
+  const [licenseNumberError, setLicenseNumberError] = useState("");
+  const [businessNumber, setBusinessNumber] = useState("");
+  const [businessNumberError, setBusinessNumberError] = useState("");
   const [phone, setPhone] = useState("");
   const [zonecode, setZonecode] = useState("");
   const [address, setAddress] = useState("");
@@ -73,8 +77,33 @@ export default function VerificationModal({
     return data.publicUrl;
   };
 
+  function formatBusinessNumber(digits: string): string {
+    if (digits.length <= 3) return digits;
+    if (digits.length <= 5) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+    return `${digits.slice(0, 3)}-${digits.slice(3, 5)}-${digits.slice(5)}`;
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    let hasValidationError = false;
+
+    if (licenseNumber.length < 4 || licenseNumber.length > 5) {
+      setLicenseNumberError("약사면허번호는 4~5자리 숫자입니다");
+      hasValidationError = true;
+    } else {
+      setLicenseNumberError("");
+    }
+
+    if (businessNumber.length !== 10) {
+      setBusinessNumberError("사업자등록번호는 10자리 숫자입니다");
+      hasValidationError = true;
+    } else {
+      setBusinessNumberError("");
+    }
+
+    if (hasValidationError) return;
+
     if (!licenseFile || !businessFile) {
       setError("약사면허증과 사업자등록증 이미지를 모두 업로드해주세요.");
       return;
@@ -95,6 +124,8 @@ export default function VerificationModal({
           user_id: user!.id,
           pharmacy_name: pharmacyName,
           pharmacist_name: pharmacistName,
+          license_number: licenseNumber,
+          business_number: businessNumber,
           phone,
           address: detailAddress
             ? `(${zonecode}) ${address}, ${detailAddress}`
@@ -178,7 +209,7 @@ export default function VerificationModal({
               onChange={(e) => setPharmacyName(e.target.value)}
               placeholder="예: 세종약국"
               required
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
             />
           </div>
 
@@ -193,8 +224,56 @@ export default function VerificationModal({
               onChange={(e) => setPharmacistName(e.target.value)}
               placeholder="예: 홍길동"
               required
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
             />
+          </div>
+
+          {/* License Number */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              약사면허번호
+            </label>
+            <input
+              type="text"
+              inputMode="numeric"
+              value={licenseNumber}
+              onChange={(e) => {
+                const digits = e.target.value.replace(/\D/g, "").slice(0, 5);
+                setLicenseNumber(digits);
+                if (licenseNumberError) setLicenseNumberError("");
+              }}
+              placeholder="4~5자리 숫자"
+              required
+              maxLength={5}
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+            />
+            {licenseNumberError && (
+              <p className="text-xs text-red-500 mt-1">{licenseNumberError}</p>
+            )}
+          </div>
+
+          {/* Business Number */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              사업자등록번호
+            </label>
+            <input
+              type="text"
+              inputMode="numeric"
+              value={formatBusinessNumber(businessNumber)}
+              onChange={(e) => {
+                const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
+                setBusinessNumber(digits);
+                if (businessNumberError) setBusinessNumberError("");
+              }}
+              placeholder="000-00-00000"
+              required
+              maxLength={12}
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+            />
+            {businessNumberError && (
+              <p className="text-xs text-red-500 mt-1">{businessNumberError}</p>
+            )}
           </div>
 
           {/* Phone */}
@@ -220,7 +299,7 @@ export default function VerificationModal({
               placeholder="예: 010-1234-5678"
               required
               maxLength={13}
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
             />
           </div>
 
@@ -240,7 +319,7 @@ export default function VerificationModal({
               <button
                 type="button"
                 onClick={handleSearchAddress}
-                className="px-4 py-3 bg-blue-500 text-white text-sm font-medium rounded-xl hover:bg-blue-600 transition-colors whitespace-nowrap"
+                className="px-4 py-3 bg-sky-500 text-white text-sm font-medium rounded-xl hover:bg-sky-600 transition-colors whitespace-nowrap"
               >
                 주소 검색
               </button>
@@ -259,7 +338,7 @@ export default function VerificationModal({
               value={detailAddress}
               onChange={(e) => setDetailAddress(e.target.value)}
               placeholder="상세주소를 입력해주세요 (동/호수 등)"
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
             />
           </div>
 
@@ -278,7 +357,7 @@ export default function VerificationModal({
             <button
               type="button"
               onClick={() => licenseInputRef.current?.click()}
-              className="w-full flex items-center justify-center gap-2 px-4 py-4 border-2 border-dashed border-gray-200 rounded-xl text-sm text-gray-500 hover:border-blue-400 hover:text-blue-500 transition-colors"
+              className="w-full flex items-center justify-center gap-2 px-4 py-4 border-2 border-dashed border-gray-200 rounded-xl text-sm text-gray-500 hover:border-sky-400 hover:text-sky-500 transition-colors"
             >
               {licenseFile ? (
                 <span className="text-gray-900 font-medium truncate">
@@ -320,7 +399,7 @@ export default function VerificationModal({
             <button
               type="button"
               onClick={() => businessInputRef.current?.click()}
-              className="w-full flex items-center justify-center gap-2 px-4 py-4 border-2 border-dashed border-gray-200 rounded-xl text-sm text-gray-500 hover:border-blue-400 hover:text-blue-500 transition-colors"
+              className="w-full flex items-center justify-center gap-2 px-4 py-4 border-2 border-dashed border-gray-200 rounded-xl text-sm text-gray-500 hover:border-sky-400 hover:text-sky-500 transition-colors"
             >
               {businessFile ? (
                 <span className="text-gray-900 font-medium truncate">
@@ -356,7 +435,7 @@ export default function VerificationModal({
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 bg-blue-500 text-white font-semibold rounded-xl hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full py-3 bg-sky-500 text-white font-semibold rounded-xl hover:bg-sky-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {loading ? "제출 중..." : "인증 신청하기"}
           </button>

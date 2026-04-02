@@ -59,7 +59,7 @@ const STAT_CARDS = [
   {
     key: "approvedMedicines" as const,
     label: "승인 약품",
-    color: "text-blue-600 bg-blue-50 border-blue-100",
+    color: "text-sky-600 bg-sky-50 border-sky-100",
     href: "/admin/medicines",
   },
   {
@@ -86,7 +86,7 @@ const QUICK_LINKS = [
     href: "/admin/medicines",
     title: "약품 검수",
     description: "등록된 약품을 검수하고 게시를 승인합니다.",
-    color: "bg-blue-50 text-blue-600 border-blue-100",
+    color: "bg-sky-50 text-sky-600 border-sky-100",
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23.693L5 14.5m14.8.8l1.402 1.402c1.232 1.232 1.232 3.23 0 4.462l-.017.017c-1.232 1.232-3.23 1.232-4.462 0L15.32 19.78M5 14.5l-1.402 1.402c-1.232 1.232-1.232 3.23 0 4.462l.017.017c1.232 1.232 3.23 1.232 4.462 0L9.48 19.078" />
@@ -176,7 +176,7 @@ export default function AdminDashboard() {
     <div>
       <h1 className="text-2xl font-bold text-gray-900 mb-1">관리자 대시보드</h1>
       <p className="text-sm text-gray-500 mb-6">
-        MedExNet 플랫폼을 관리합니다.
+        Medexnet 플랫폼을 관리합니다.
       </p>
 
       {/* 통계 카드 */}
@@ -185,7 +185,7 @@ export default function AdminDashboard() {
           <Link
             key={card.key}
             href={card.href}
-            className="bg-white rounded-2xl border border-gray-100 p-4 hover:shadow-md transition-all"
+            className="bg-white rounded-2xl border border-gray-100 p-4 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
           >
             <p className="text-xs text-gray-500 mb-1">{card.label}</p>
             <p className="text-2xl font-bold text-gray-900">
@@ -205,7 +205,7 @@ export default function AdminDashboard() {
           <h2 className="text-lg font-bold text-gray-900">검수 대기 약품</h2>
           <Link
             href="/admin/medicines"
-            className="text-sm text-blue-500 hover:text-blue-600 font-medium"
+            className="text-sm text-sky-500 hover:text-sky-600 font-medium"
           >
             전체보기
           </Link>
@@ -213,7 +213,7 @@ export default function AdminDashboard() {
 
         {loading ? (
           <div className="flex justify-center py-10">
-            <div className="w-7 h-7 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+            <div className="w-7 h-7 border-4 border-sky-500 border-t-transparent rounded-full animate-spin" />
           </div>
         ) : pendingList.length === 0 ? (
           <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
@@ -319,7 +319,7 @@ export default function AdminDashboard() {
             <Link
               key={card.href}
               href={card.href}
-              className="group flex items-center gap-3 p-4 bg-white rounded-2xl border border-gray-100 hover:shadow-md transition-all"
+              className="group flex items-center gap-3 p-4 bg-white rounded-2xl border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
             >
               <div
                 className={`w-10 h-10 rounded-xl flex items-center justify-center border flex-shrink-0 ${card.color}`}
@@ -327,7 +327,7 @@ export default function AdminDashboard() {
                 {card.icon}
               </div>
               <div className="min-w-0">
-                <h3 className="text-sm font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                <h3 className="text-sm font-semibold text-gray-900 group-hover:text-sky-600 transition-colors">
                   {card.title}
                 </h3>
                 <p className="text-xs text-gray-500 truncate">

@@ -24,7 +24,7 @@ function HomeContent() {
   if (loading || (user && !profile)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-sky-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -38,7 +38,7 @@ function HomeContent() {
   if (profile?.role === "admin") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-sky-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -74,7 +74,7 @@ function HomeContent() {
               약사 인증이 필요합니다
             </h1>
             <p className="text-gray-500 mb-2">
-              MedExNet의 서비스를 이용하려면 약사 인증을 완료해주세요.
+              Medexnet의 서비스를 이용하려면 약사 인증을 완료해주세요.
             </p>
             {profile?.verification_status === "pending" && (
               <p className="text-orange-600 font-medium mb-6">
@@ -88,7 +88,7 @@ function HomeContent() {
                 </p>
                 <button
                   onClick={() => setShowModal(true)}
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-xl transition-colors"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-sky-500 hover:bg-sky-600 text-white font-medium rounded-xl transition-colors"
                 >
                   약사 인증하기
                 </button>
@@ -101,7 +101,7 @@ function HomeContent() {
                 </p>
                 <button
                   onClick={() => setShowModal(true)}
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-xl transition-colors"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-sky-500 hover:bg-sky-600 text-white font-medium rounded-xl transition-colors"
                 >
                   약사 인증하기
                 </button>

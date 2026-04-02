@@ -253,7 +253,7 @@ export default function SettlementManagementPage() {
   if (loading) {
     return (
       <div className="flex justify-center py-20">
-        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-sky-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -299,7 +299,7 @@ export default function SettlementManagementPage() {
               onClick={() => setFilter(tab.key)}
               className={`px-4 py-2 text-sm font-medium rounded-xl transition-colors ${
                 filter === tab.key
-                  ? "bg-blue-500 text-white"
+                  ? "bg-sky-500 text-white"
                   : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
               }`}
             >
@@ -370,7 +370,7 @@ export default function SettlementManagementPage() {
                   onClick={() => setSelected(settlement)}
                   className={`w-full text-left bg-white rounded-2xl border p-4 transition-all hover:shadow-sm ${
                     isSelected
-                      ? "border-blue-300 ring-2 ring-blue-100"
+                      ? "border-sky-300 ring-2 ring-sky-100"
                       : "border-gray-100"
                   }`}
                 >

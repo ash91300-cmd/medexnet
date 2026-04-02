@@ -30,7 +30,8 @@
       "mcp__supabase__list_extensions",
       "Bash(netstat:*)",
       "Bash(xargs:*)",
-      "Bash(npm run dev:*)"
+      "Bash(npm run dev:*)",
+      "Bash(npx tsc:*)"
     ],
     "deny": [],
     "ask": []

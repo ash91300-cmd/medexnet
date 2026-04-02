@@ -64,7 +64,7 @@ function MyPageContent() {
       <>
         <Navbar />
         <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" />
         </div>
       </>
     );
@@ -75,7 +75,7 @@ function MyPageContent() {
   return (
     <>
       <Navbar />
-      <main className="max-w-3xl mx-auto px-6 py-10">
+      <main className="max-w-3xl mx-auto px-6 py-10 page-enter">
         <h1 className="text-2xl font-bold text-gray-900 mb-8">마이페이지</h1>
 
         <div className="grid gap-4">
@@ -83,9 +83,9 @@ function MyPageContent() {
             <Link
               key={item.href}
               href={item.href}
-              className="flex items-center gap-4 p-5 bg-white border border-gray-200 rounded-2xl hover:border-blue-300 hover:shadow-md transition-all group"
+              className="flex items-center gap-4 p-5 bg-white border border-gray-200 rounded-2xl hover:border-sky-200 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group"
             >
-              <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-500 group-hover:bg-blue-100 transition-colors">
+              <div className="w-12 h-12 bg-sky-50 rounded-xl flex items-center justify-center text-sky-500 group-hover:bg-sky-100 transition-colors">
                 {item.icon}
               </div>
               <div className="flex-1">
@@ -97,7 +97,7 @@ function MyPageContent() {
                 </p>
               </div>
               <svg
-                className="w-5 h-5 text-gray-300 group-hover:text-blue-400 transition-colors"
+                className="w-5 h-5 text-gray-300 group-hover:text-sky-400 transition-colors"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -122,7 +122,7 @@ export default function MyPage() {
     <Suspense
       fallback={
         <div className="min-h-screen flex items-center justify-center bg-white">
-          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-4 border-sky-500 border-t-transparent rounded-full animate-spin" />
         </div>
       }
     >

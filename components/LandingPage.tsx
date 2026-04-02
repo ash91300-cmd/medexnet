@@ -24,14 +24,14 @@ const testimonials = [
   {
     quote: "폐기 직전 재고 80만 원어치를 일주일 만에 전부 판매했습니다",
     detail:
-      "유통기한 4개월 남은 감기약 재고가 쌓여서 폐기를 고민하고 있었는데, MedExNet에 올리니까 이틀 만에 주문이 들어왔습니다. 검수도 빨랐고, 에스크로 덕분에 정산도 깔끔했어요. 수수료 3%를 빼도 폐기하는 것보다 훨씬 낫죠. 지금은 유통기한 6개월 남을 때부터 미리 등록하고 있습니다.",
+      "유통기한 4개월 남은 감기약 재고가 쌓여서 폐기를 고민하고 있었는데, Medexnet에 올리니까 이틀 만에 주문이 들어왔습니다. 검수도 빨랐고, 에스크로 덕분에 정산도 깔끔했어요. 수수료 3%를 빼도 폐기하는 것보다 훨씬 낫죠. 지금은 유통기한 6개월 남을 때부터 미리 등록하고 있습니다.",
     author: "김○○ 약사 · 서울 ○○약국",
     role: "판매자로 이용 중",
   },
   {
     quote: "도매상에서 100정 단위로만 팔던 약을 딱 필요한 만큼 샀습니다",
     detail:
-      "환자분이 특정 제네릭을 요청하셨는데 도매상 최소 주문이 100정이라 고민이었어요. MedExNet에서 30정 단위로 올라온 걸 발견하고 바로 주문했습니다. 미개봉 상태에 유통기한도 8개월 넘게 남아 있어서 약가 대비 8% 할인된 가격에 구매했고, 약사면허 인증된 약국에서 오는 거라 안심이 됐습니다.",
+      "환자분이 특정 제네릭을 요청하셨는데 도매상 최소 주문이 100정이라 고민이었어요. Medexnet에서 30정 단위로 올라온 걸 발견하고 바로 주문했습니다. 미개봉 상태에 유통기한도 8개월 넘게 남아 있어서 약가 대비 8% 할인된 가격에 구매했고, 약사면허 인증된 약국에서 오는 거라 안심이 됐습니다.",
     author: "박○○ 약사 · 경기 ○○○약국",
     role: "구매자로 이용 중",
   },
@@ -298,7 +298,7 @@ export default function LandingPage() {
           <div className="flex items-center">
             <Image
               src="/logo.png"
-              alt="MedExNet"
+              alt="Medexnet"
               width={160}
               height={36}
               className="h-12 w-auto"
@@ -353,10 +353,12 @@ export default function LandingPage() {
             </svg>
             인증된 약국 전용 거래 플랫폼
           </span>
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-800 leading-tight mb-6 text-balance animate-slide-up">
-            약국 불용재고, 버리지 마세요.
+          <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-800 leading-[1.35] mb-8 text-balance animate-slide-up">
+            불용재고, 이제
             <br />
-            <span className="text-sky-500">다른 약국</span>이 필요로 합니다.
+            <span className="text-sky-500">Medexnet</span>에서
+            <br />
+            안전하게 거래하세요.
           </h1>
           <p className="text-lg text-gray-500 mb-10 leading-relaxed max-w-2xl mx-auto text-balance animate-slide-up stagger-2">
             약사면허 인증을 완료한 약국끼리만 거래합니다.
@@ -500,7 +502,7 @@ export default function LandingPage() {
               transition: "all 0.6s ease-out",
             }}
           >
-            MedExNet이 해결합니다
+            Medexnet이 해결합니다
           </h2>
           <p
             className="text-gray-500 text-center mb-16 text-balance"
@@ -824,7 +826,7 @@ export default function LandingPage() {
               transition: "all 0.6s ease-out 100ms",
             }}
           >
-            실제 약국에서 경험한 MedExNet 이용 후기
+            실제 약국에서 경험한 Medexnet 이용 후기
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {testimonials.map((t, i) => (
@@ -850,7 +852,7 @@ export default function LandingPage() {
               <div className="flex items-center mb-4">
                 <Image
                   src="/logo.png"
-                  alt="MedExNet"
+                  alt="Medexnet"
                   width={140}
                   height={32}
                   className="h-10 w-auto"
@@ -924,7 +926,7 @@ export default function LandingPage() {
         </div>
         <div className="border-t border-gray-200 py-6">
           <p className="text-center text-sm text-gray-400">
-            &copy; {new Date().getFullYear()} MedExNet. 약국 전용 서비스입니다.
+            &copy; {new Date().getFullYear()} Medexnet. 약국 전용 서비스입니다.
           </p>
         </div>
       </footer>

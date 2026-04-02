@@ -8,6 +8,8 @@ interface VerificationRequest {
   user_id: string;
   pharmacy_name: string;
   pharmacist_name: string;
+  license_number: string | null;
+  business_number: string | null;
   phone: string;
   address: string | null;
   license_image_url: string;
@@ -16,6 +18,13 @@ interface VerificationRequest {
   reviewed_at: string | null;
   status: "pending" | "approved" | "rejected";
   created_at: string;
+}
+
+function formatBusinessNumber(num: string): string {
+  if (!num) return "-";
+  const digits = num.replace(/\D/g, "");
+  if (digits.length !== 10) return num;
+  return `${digits.slice(0, 3)}-${digits.slice(3, 5)}-${digits.slice(5)}`;
 }
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
@@ -196,7 +205,7 @@ export default function VerificationManagementPage() {
   if (loading) {
     return (
       <div className="flex justify-center py-20">
-        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-sky-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -216,7 +225,7 @@ export default function VerificationManagementPage() {
             onClick={() => setFilter(tab.key)}
             className={`px-4 py-2 text-sm font-medium rounded-xl transition-colors ${
               filter === tab.key
-                ? "bg-blue-500 text-white"
+                ? "bg-sky-500 text-white"
                 : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
             }`}
           >
@@ -252,7 +261,7 @@ export default function VerificationManagementPage() {
                   }}
                   className={`w-full text-left bg-white rounded-2xl border p-4 transition-all hover:shadow-sm ${
                     isSelected
-                      ? "border-blue-300 ring-2 ring-blue-100"
+                      ? "border-sky-300 ring-2 ring-sky-100"
                       : "border-gray-100"
                   }`}
                 >
@@ -326,6 +335,8 @@ export default function VerificationManagementPage() {
                 <div className="space-y-3">
                   <InfoRow label="약국명" value={selected.pharmacy_name} />
                   <InfoRow label="약사명" value={selected.pharmacist_name} />
+                  <InfoRow label="면허번호" value={selected.license_number ?? "-"} />
+                  <InfoRow label="사업자번호" value={selected.business_number ? formatBusinessNumber(selected.business_number) : "-"} />
                   <InfoRow label="연락처" value={selected.phone} />
                   <InfoRow label="주소" value={selected.address ?? "-"} />
                   <InfoRow
@@ -358,7 +369,7 @@ export default function VerificationManagementPage() {
                         onClick={() =>
                           setImageModal(selected.license_image_url)
                         }
-                        className="w-full aspect-[4/3] bg-gray-50 rounded-xl border border-gray-200 overflow-hidden hover:border-blue-300 transition-colors group"
+                        className="w-full aspect-[4/3] bg-gray-50 rounded-xl border border-gray-200 overflow-hidden hover:border-sky-300 transition-colors group"
                       >
                         <img
                           src={selected.license_image_url}
@@ -375,7 +386,7 @@ export default function VerificationManagementPage() {
                         onClick={() =>
                           setImageModal(selected.business_image_url)
                         }
-                        className="w-full aspect-[4/3] bg-gray-50 rounded-xl border border-gray-200 overflow-hidden hover:border-blue-300 transition-colors group"
+                        className="w-full aspect-[4/3] bg-gray-50 rounded-xl border border-gray-200 overflow-hidden hover:border-sky-300 transition-colors group"
                       >
                         <img
                           src={selected.business_image_url}

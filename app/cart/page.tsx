@@ -70,7 +70,7 @@ export default function CartPage() {
     <Suspense
       fallback={
         <div className="min-h-screen flex items-center justify-center bg-white">
-          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-4 border-sky-500 border-t-transparent rounded-full animate-spin" />
         </div>
       }
     >
@@ -285,10 +285,10 @@ function CartContent() {
   /* -- 로딩 -- */
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gradient-to-b from-sky-50/30 to-white">
         <Navbar />
         <div className="flex justify-center py-20">
-          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-4 border-sky-500 border-t-transparent rounded-full animate-spin" />
         </div>
       </div>
     );
@@ -297,9 +297,9 @@ function CartContent() {
   /* -- 비로그인 -- */
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gradient-to-b from-sky-50/30 to-white">
         <Navbar />
-        <main className="max-w-4xl mx-auto px-6 py-10">
+        <main className="max-w-4xl mx-auto px-6 py-10 page-enter">
           <div className="text-center py-20 bg-white rounded-2xl border border-gray-100">
             <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <svg
@@ -324,7 +324,7 @@ function CartContent() {
             </p>
             <Link
               href="/auth"
-              className="text-blue-500 hover:text-blue-600 font-medium text-sm"
+              className="text-sky-500 hover:text-sky-600 font-medium text-sm"
             >
               로그인하기
             </Link>
@@ -337,9 +337,9 @@ function CartContent() {
   /* -- 빈 장바구니 -- */
   if (cartItems.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gradient-to-b from-sky-50/30 to-white">
         <Navbar />
-        <main className="max-w-4xl mx-auto px-6 py-10">
+        <main className="max-w-4xl mx-auto px-6 py-10 page-enter">
           <h1 className="text-2xl font-bold text-gray-900 mb-6">장바구니</h1>
           <div className="text-center py-20 bg-white rounded-2xl border border-gray-100">
             <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -365,7 +365,7 @@ function CartContent() {
             </p>
             <Link
               href="/"
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-xl transition-colors"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-sky-500 hover:bg-sky-600 text-white text-sm font-medium rounded-xl transition-colors"
             >
               게시판으로 이동
             </Link>
@@ -382,7 +382,7 @@ function CartContent() {
 
   /* -- 장바구니 목록 -- */
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-b from-sky-50/30 to-white">
       {/* 토스트 */}
       {toast && (
         <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[100] animate-fade-in">
@@ -429,7 +429,7 @@ function CartContent() {
 
       <Navbar />
 
-      <main className="max-w-4xl mx-auto px-6 py-10">
+      <main className="max-w-4xl mx-auto px-6 py-10 page-enter">
         {/* 헤더 */}
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-gray-900">
@@ -537,7 +537,7 @@ function CartContent() {
                       <div className="flex-1 min-w-0">
                         <Link
                           href={`/medicines/${medicine.id}`}
-                          className="text-sm font-medium text-gray-900 hover:text-blue-600 transition-colors truncate block"
+                          className="text-sm font-medium text-gray-900 hover:text-sky-600 transition-colors truncate block"
                         >
                           {drug?.product_name ?? "알 수 없는 약품"}
                         </Link>
@@ -681,7 +681,7 @@ function CartContent() {
           <button
             type="button"
             onClick={() => router.push("/checkout")}
-            className="w-full h-12 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-xl transition-colors text-base"
+            className="w-full h-12 bg-sky-500 hover:bg-sky-600 text-white font-medium rounded-xl shadow-lg shadow-sky-500/25 transition-colors text-base"
           >
             주문하기
           </button>

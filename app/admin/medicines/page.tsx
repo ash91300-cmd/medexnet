@@ -243,14 +243,14 @@ export default function MedicineInspectionPage() {
             onClick={() => setFilter(f.key)}
             className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
               filter === f.key
-                ? "bg-blue-500 text-white"
+                ? "bg-sky-500 text-white"
                 : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
             }`}
           >
             {f.label}
             <span
               className={`ml-1.5 text-xs ${
-                filter === f.key ? "text-blue-100" : "text-gray-400"
+                filter === f.key ? "text-sky-100" : "text-gray-400"
               }`}
             >
               {counts[f.key as keyof typeof counts]}
@@ -262,7 +262,7 @@ export default function MedicineInspectionPage() {
       {/* 로딩 */}
       {loading ? (
         <div className="flex justify-center py-20">
-          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-4 border-sky-500 border-t-transparent rounded-full animate-spin" />
         </div>
       ) : filtered.length === 0 ? (
         /* 빈 상태 */
@@ -513,7 +513,7 @@ function DetailModal({
                   onClick={() => onSelectImage(idx)}
                   className={`relative w-16 h-16 rounded-lg overflow-hidden border-2 transition-colors flex-shrink-0 ${
                     selectedImage === idx
-                      ? "border-blue-500"
+                      ? "border-sky-500"
                       : "border-gray-200 hover:border-gray-300"
                   }`}
                 >
@@ -542,7 +542,7 @@ function DetailModal({
             <span
               className={`text-xs font-medium px-2.5 py-1 rounded-full ${
                 medicine.is_opened === "미개봉"
-                  ? "bg-blue-100 text-blue-700"
+                  ? "bg-sky-100 text-sky-700"
                   : "bg-orange-100 text-orange-700"
               }`}
             >

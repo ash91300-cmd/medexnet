@@ -25,7 +25,7 @@ interface TrackingResult { level: number; trackingDetails: TrackingDetail[]; }
 const SHIPPING_FEE = 4000;
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   pending: { label: "주문접수", color: "bg-amber-100 text-amber-700" },
-  confirmed: { label: "결제완료", color: "bg-blue-100 text-blue-700" },
+  confirmed: { label: "결제완료", color: "bg-sky-100 text-sky-700" },
   shipping: { label: "배송중", color: "bg-indigo-100 text-indigo-700" },
   delivered: { label: "배송완료", color: "bg-teal-100 text-teal-700" },
   completed: { label: "거래완료", color: "bg-emerald-100 text-emerald-700" },
@@ -43,7 +43,7 @@ function formatDateTime(d: string) { return new Date(d).toLocaleString("ko-KR", 
 
 export default function OrdersPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-white"><div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" /></div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-white"><div className="w-8 h-8 border-4 border-sky-500 border-t-transparent rounded-full animate-spin" /></div>}>
       <OrdersContent />
     </Suspense>
   );
@@ -137,14 +137,14 @@ function OrdersContent() {
     return Math.max(0, remaining);
   }
 
-  if (authLoading || loading) return <div className="min-h-screen bg-gray-50"><Navbar /><div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" /></div></div>;
-  if (!user) return <div className="min-h-screen bg-gray-50"><Navbar /><main className="max-w-4xl mx-auto px-6 py-10"><div className="text-center py-20 bg-white rounded-2xl border border-gray-100"><h2 className="text-xl font-bold text-gray-900 mb-2">로그인이 필요합니다</h2><p className="text-sm text-gray-500 mb-6">주문 내역을 확인하려면 로그인해주세요.</p><Link href="/auth" className="text-blue-500 hover:text-blue-600 font-medium text-sm">로그인하기</Link></div></main></div>;
-  if (orders.length === 0) return <div className="min-h-screen bg-gray-50"><Navbar /><main className="max-w-4xl mx-auto px-6 py-10"><h1 className="text-2xl font-bold text-gray-900 mb-6">주문 내역</h1><div className="text-center py-20 bg-white rounded-2xl border border-gray-100"><h2 className="text-xl font-bold text-gray-900 mb-2">주문 내역이 없습니다</h2><p className="text-sm text-gray-500 mb-6">약품 게시판에서 필요한 약품을 주문해보세요.</p><Link href="/" className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-xl transition-colors">게시판으로 이동</Link></div></main></div>;
+  if (authLoading || loading) return <div className="min-h-screen bg-gradient-to-b from-sky-50/30 to-white"><Navbar /><div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-sky-500 border-t-transparent rounded-full animate-spin" /></div></div>;
+  if (!user) return <div className="min-h-screen bg-gradient-to-b from-sky-50/30 to-white"><Navbar /><main className="max-w-4xl mx-auto px-6 py-10"><div className="text-center py-20 bg-white rounded-2xl border border-gray-100"><h2 className="text-xl font-bold text-gray-900 mb-2">로그인이 필요합니다</h2><p className="text-sm text-gray-500 mb-6">주문 내역을 확인하려면 로그인해주세요.</p><Link href="/auth" className="text-sky-500 hover:text-sky-600 font-medium text-sm">로그인하기</Link></div></main></div>;
+  if (orders.length === 0) return <div className="min-h-screen bg-gradient-to-b from-sky-50/30 to-white"><Navbar /><main className="max-w-4xl mx-auto px-6 py-10"><h1 className="text-2xl font-bold text-gray-900 mb-6">주문 내역</h1><div className="text-center py-20 bg-white rounded-2xl border border-gray-100"><h2 className="text-xl font-bold text-gray-900 mb-2">주문 내역이 없습니다</h2><p className="text-sm text-gray-500 mb-6">약품 게시판에서 필요한 약품을 주문해보세요.</p><Link href="/" className="inline-flex items-center gap-2 px-5 py-2.5 bg-sky-500 hover:bg-sky-600 text-white text-sm font-medium rounded-xl transition-colors">게시판으로 이동</Link></div></main></div>;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-b from-sky-50/30 to-white">
       <Navbar />
-      <main className="max-w-4xl mx-auto px-6 py-10">
+      <main className="max-w-4xl mx-auto px-6 py-10 page-enter">
         <h1 className="text-2xl font-bold text-gray-900 mb-6">주문 내역 <span className="text-base font-normal text-gray-500 ml-2">{orders.length}건</span></h1>
         <div className="space-y-4">
           {orders.map((order) => {
@@ -207,7 +207,7 @@ function OrdersContent() {
                           if (isExpanded) { setExpandedOrder(null); }
                           else { setExpandedOrder(order.id); if (!tracking) fetchTracking(order); }
                         }}
-                        className="text-xs text-blue-500 hover:text-blue-600 font-medium"
+                        className="text-xs text-sky-500 hover:text-sky-600 font-medium"
                       >
                         {isExpanded ? "접기" : "배송 조회"}
                       </button>
@@ -221,12 +221,12 @@ function OrdersContent() {
                     {isExpanded && (
                       <div className="mt-3">
                         {isTrackingLoading ? (
-                          <div className="flex justify-center py-4"><div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" /></div>
+                          <div className="flex justify-center py-4"><div className="w-5 h-5 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" /></div>
                         ) : tracking?.trackingDetails ? (
                           <div className="space-y-0 border-l-2 border-gray-200 ml-2">
                             {tracking.trackingDetails.slice().reverse().map((d, i) => (
                               <div key={i} className="pl-4 pb-4 relative">
-                                <div className={`absolute -left-[5px] top-1 w-2 h-2 rounded-full ${i === 0 ? "bg-blue-500" : "bg-gray-300"}`} />
+                                <div className={`absolute -left-[5px] top-1 w-2 h-2 rounded-full ${i === 0 ? "bg-sky-500" : "bg-gray-300"}`} />
                                 <p className="text-xs text-gray-400">{d.time}</p>
                                 <p className="text-sm text-gray-900">{d.kind}</p>
                                 <p className="text-xs text-gray-500">{d.where}</p>

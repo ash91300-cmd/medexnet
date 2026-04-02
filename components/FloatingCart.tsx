@@ -177,7 +177,7 @@ export default function FloatingCart() {
       <button
         ref={btnRef}
         onClick={() => setOpen((v) => !v)}
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-lg hover:shadow-xl flex items-center justify-center transition-all active:scale-95"
+        className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-sky-500 hover:bg-sky-600 text-white rounded-full shadow-lg hover:shadow-xl flex items-center justify-center transition-all active:scale-95"
         title="장바구니"
       >
         <svg
@@ -240,7 +240,7 @@ export default function FloatingCart() {
           <div className="flex-1 overflow-y-auto">
             {loading ? (
               <div className="flex justify-center py-12">
-                <div className="w-6 h-6 border-3 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                <div className="w-6 h-6 border-3 border-sky-500 border-t-transparent rounded-full animate-spin" />
               </div>
             ) : cartItems.length === 0 ? (
               <div className="text-center py-12 px-4">
@@ -319,7 +319,7 @@ export default function FloatingCart() {
                         <Link
                           href={`/medicines/${medicine.id}`}
                           onClick={() => setOpen(false)}
-                          className="text-sm font-medium text-gray-900 hover:text-blue-600 transition-colors truncate block"
+                          className="text-sm font-medium text-gray-900 hover:text-sky-600 transition-colors truncate block"
                         >
                           {drug?.product_name ?? "알 수 없는 약품"}
                         </Link>
@@ -450,7 +450,7 @@ export default function FloatingCart() {
                     setOpen(false);
                     router.push("/checkout");
                   }}
-                  className="flex-1 h-10 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-xl transition-colors text-sm"
+                  className="flex-1 h-10 bg-sky-500 hover:bg-sky-600 text-white font-medium rounded-xl transition-colors text-sm"
                 >
                   주문하기
                 </button>

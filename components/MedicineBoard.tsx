@@ -144,7 +144,7 @@ export default function MedicineBoard({
   if (loading) {
     return (
       <div className="flex justify-center py-20">
-        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-sky-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -246,7 +246,7 @@ function MedicineCard({ medicine, pharmacyName }: { medicine: MedicineRow; pharm
   return (
     <Link
       href={`/medicines/${medicine.id}`}
-      className={`block bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg hover:border-gray-200 transition-all cursor-pointer ${!tradeable ? "opacity-60" : ""}`}
+      className={`block bg-white rounded-2xl border border-sky-100 overflow-hidden hover:shadow-xl hover:-translate-y-1 hover:border-sky-200 transition-all duration-300 cursor-pointer ${!tradeable ? "opacity-60" : ""}`}
     >
       {/* 이미지 */}
       <div className="aspect-[4/3] bg-gray-50 relative overflow-hidden">
@@ -276,7 +276,7 @@ function MedicineCard({ medicine, pharmacyName }: { medicine: MedicineRow; pharm
         {/* 배지들 */}
         <div className="absolute top-2 left-2 flex gap-1.5">
           <span
-            className={`text-xs font-medium px-2 py-0.5 rounded-full ${medicine.is_opened === "미개봉" ? "bg-blue-100 text-blue-700" : "bg-orange-100 text-orange-700"}`}
+            className={`text-xs font-medium px-2 py-0.5 rounded-full ${medicine.is_opened === "미개봉" ? "bg-sky-100 text-sky-700" : "bg-orange-100 text-orange-700"}`}
           >
             {medicine.is_opened}
           </span>
@@ -316,7 +316,7 @@ function MedicineCard({ medicine, pharmacyName }: { medicine: MedicineRow; pharm
                 <span className="text-xs text-gray-400 line-through">
                   {formatPrice(maxPrice)}원
                 </span>
-                <span className="font-bold text-blue-600">
+                <span className="font-bold text-sky-600">
                   {formatPrice(sellingPrice)}원
                 </span>
               </div>

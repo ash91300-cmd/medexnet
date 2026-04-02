@@ -141,7 +141,7 @@ export default function AdminLayout({
   if (loading || !user || !profile) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-sky-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -173,7 +173,7 @@ export default function AdminLayout({
             className="flex items-center gap-2.5"
             onClick={() => setSidebarOpen(false)}
           >
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-sky-600 rounded-lg flex items-center justify-center">
               <svg
                 className="w-4 h-4 text-white"
                 fill="none"
@@ -225,11 +225,11 @@ export default function AdminLayout({
                 onClick={() => setSidebarOpen(false)}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
                   isActive
-                    ? "bg-blue-50 text-blue-700"
+                    ? "bg-sky-50 text-sky-700"
                     : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                 }`}
               >
-                <span className={isActive ? "text-blue-600" : "text-gray-400"}>
+                <span className={isActive ? "text-sky-600" : "text-gray-400"}>
                   <MenuIcon icon={item.icon} />
                 </span>
                 {item.label}
@@ -241,8 +241,8 @@ export default function AdminLayout({
         {/* 하단 사용자 정보 */}
         <div className="border-t border-gray-100 p-4">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-9 h-9 bg-blue-100 rounded-full flex items-center justify-center">
-              <span className="text-sm font-bold text-blue-600">
+            <div className="w-9 h-9 bg-sky-100 rounded-full flex items-center justify-center">
+              <span className="text-sm font-bold text-sky-600">
                 {profile?.name?.[0] ?? "A"}
               </span>
             </div>

@@ -35,7 +35,7 @@ interface SaleOrder {
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   pending: { label: "주문접수", color: "bg-amber-100 text-amber-700" },
-  confirmed: { label: "결제완료", color: "bg-blue-100 text-blue-700" },
+  confirmed: { label: "결제완료", color: "bg-sky-100 text-sky-700" },
   shipping: { label: "배송중", color: "bg-indigo-100 text-indigo-700" },
   delivered: { label: "배송완료", color: "bg-teal-100 text-teal-700" },
   completed: { label: "거래완료", color: "bg-emerald-100 text-emerald-700" },
@@ -136,10 +136,10 @@ function SalesContent() {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gradient-to-b from-sky-50/30 to-white">
         <Navbar />
         <div className="flex justify-center py-20">
-          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-4 border-sky-500 border-t-transparent rounded-full animate-spin" />
         </div>
       </div>
     );
@@ -147,7 +147,7 @@ function SalesContent() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gradient-to-b from-sky-50/30 to-white">
         <Navbar />
         <main className="max-w-4xl mx-auto px-6 py-10">
           <div className="text-center py-20 bg-white rounded-2xl border border-gray-100">
@@ -158,7 +158,7 @@ function SalesContent() {
             </div>
             <h2 className="text-xl font-bold text-gray-900 mb-2">로그인이 필요합니다</h2>
             <p className="text-sm text-gray-500 mb-6">판매 내역을 확인하려면 로그인해주세요.</p>
-            <Link href="/auth" className="text-blue-500 hover:text-blue-600 font-medium text-sm">
+            <Link href="/auth" className="text-sky-500 hover:text-sky-600 font-medium text-sm">
               로그인하기
             </Link>
           </div>
@@ -169,7 +169,7 @@ function SalesContent() {
 
   if (sales.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gradient-to-b from-sky-50/30 to-white">
         <Navbar />
         <main className="max-w-4xl mx-auto px-6 py-10">
           <Link href="/mypage" className="text-sm text-gray-500 hover:text-gray-700 transition-colors">
@@ -194,9 +194,9 @@ function SalesContent() {
   const totalSalesAmount = sales.reduce((sum, item) => sum + Number(item.sale_amount), 0);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-b from-sky-50/30 to-white">
       <Navbar />
-      <main className="max-w-4xl mx-auto px-6 py-10">
+      <main className="max-w-4xl mx-auto px-6 py-10 page-enter">
         <Link href="/mypage" className="text-sm text-gray-500 hover:text-gray-700 transition-colors">
           &larr; 마이페이지로 돌아가기
         </Link>
@@ -298,7 +298,7 @@ export default function SalesPage() {
     <Suspense
       fallback={
         <div className="min-h-screen flex items-center justify-center bg-white">
-          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-4 border-sky-500 border-t-transparent rounded-full animate-spin" />
         </div>
       }
     >

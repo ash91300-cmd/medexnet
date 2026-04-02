@@ -59,7 +59,7 @@ const SHIPPING_FEE = 4000;
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   pending: { label: "주문접수", color: "bg-amber-100 text-amber-700" },
-  confirmed: { label: "결제완료", color: "bg-blue-100 text-blue-700" },
+  confirmed: { label: "결제완료", color: "bg-sky-100 text-sky-700" },
   shipping: { label: "배송중", color: "bg-indigo-100 text-indigo-700" },
   delivered: { label: "배송완료", color: "bg-teal-100 text-teal-700" },
   completed: { label: "거래완료", color: "bg-emerald-100 text-emerald-700" },
@@ -297,7 +297,7 @@ export default function OrderManagementPage() {
   if (loading) {
     return (
       <div className="flex justify-center py-20">
-        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-sky-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -314,7 +314,7 @@ export default function OrderManagementPage() {
             onClick={() => setFilter(tab.key)}
             className={`px-4 py-2 text-sm font-medium rounded-xl transition-colors ${
               filter === tab.key
-                ? "bg-blue-500 text-white"
+                ? "bg-sky-500 text-white"
                 : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
             }`}
           >
@@ -340,7 +340,7 @@ export default function OrderManagementPage() {
                 <button
                   key={order.id}
                   onClick={() => { setSelected(order); setShowShippingForm(false); }}
-                  className={`w-full text-left bg-white rounded-2xl border p-4 transition-all hover:shadow-sm ${isSelected ? "border-blue-300 ring-2 ring-blue-100" : "border-gray-100"}`}
+                  className={`w-full text-left bg-white rounded-2xl border p-4 transition-all hover:shadow-sm ${isSelected ? "border-sky-300 ring-2 ring-sky-100" : "border-gray-100"}`}
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div className="min-w-0 flex-1">
@@ -482,7 +482,7 @@ export default function OrderManagementPage() {
                   {selected.status !== "completed" && selected.status !== "cancelled" && (
                     <div className="space-y-2 pt-2">
                       {nextAction[selected.status] && !showShippingForm && (
-                        <button onClick={() => handleStatusChange(selected, nextAction[selected.status].status)} disabled={processing} className="w-full py-3 bg-blue-500 text-white font-semibold rounded-xl hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        <button onClick={() => handleStatusChange(selected, nextAction[selected.status].status)} disabled={processing} className="w-full py-3 bg-sky-500 text-white font-semibold rounded-xl hover:bg-sky-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                           {processing ? "처리 중..." : nextAction[selected.status].label}
                         </button>
                       )}
